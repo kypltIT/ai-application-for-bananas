@@ -1,11 +1,6 @@
-/*
- * Changes:
- * - Created a new README file that provides an overview of the system's functionality
- */
-
 # AI Application for Bananas - E-commerce and Content Management System
 
-This is a comprehensive e-commerce application built with Laravel, focused on selling banana products with integrated AI-powered trend analysis.
+This is a comprehensive e-commerce application built with Laravel, focused on selling shoes products with integrated AI-powered trend analysis.
 
 ## System Overview
 
@@ -42,10 +37,10 @@ This application consists of two main sections:
    - Testimonial management
    - Site settings and configuration
 
-6. **AI-Powered Trend Analysis**
-   - Fashion trend analysis using OpenAI integration
+6. **Market Trend Analyzing and Forecasting**
+   - Market trend analysis using OpenAI integration
    - Market insights and recommendations
-
+   
 ### Customer-Facing Features
 
 1. **Shopping Experience**
