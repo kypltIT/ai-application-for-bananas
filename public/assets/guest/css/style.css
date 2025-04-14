@@ -158,6 +158,11 @@ h6 {
   line-height: 1;
 }
 
+.back-to-top {
+  background-color: #FFDBBB;
+}
+
+
 /* Flex Center */
 .single-brand-item .brand-img, .offer-deal-wrapper .deal-content .simply-countdown .simply-section, .testimonial-slider-two .slick-arrow, .today-deals-arrows.style-one .slick-arrow,
 .team-arrows.style-one .slick-arrow,

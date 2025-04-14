@@ -48,7 +48,7 @@
                      @foreach (getCategories() as $category)
                          <span class="marquee-item ms-3"><b
                                  style="color: {{ getPrimaryColor() }};">{{ $category->name }}</b><img
-                                 src="{{ asset('assets/guest/images/icon-01.ico') }}" alt="star"
+                                 src="{{ asset('assets/guest/images/icon-01.png') }}" alt="star"
                                  style="width: 40px; height: 40px; margin-left: 55px; margin-right: 55px;"></span>
                      @endforeach
                  </span>
@@ -56,7 +56,7 @@
                      @foreach (getCategories() as $category)
                          <span class="marquee-item ms-3"><b
                                  style="color: {{ getPrimaryColor() }};">{{ $category->name }}</b><img
-                                 src="{{ asset('assets/guest/images/icon-01.ico') }}" alt="star"
+                                 src="{{ asset('assets/guest/images/icon-01.png') }}" alt="star"
                                  style="width: 40px; height: 40px; margin-left: 55px; margin-right: 55px;"></span>
                      @endforeach
                  </span>
@@ -64,7 +64,7 @@
                      @foreach (getCategories() as $category)
                          <span class="marquee-item ms-3"><b
                                  style="color: {{ getPrimaryColor() }};">{{ $category->name }}</b><img
-                                 src="{{ asset('assets/guest/images/icon-01.ico') }}" alt="star"
+                                 src="{{ asset('assets/guest/images/icon-01.png') }}" alt="star"
                                  style="width: 40px; height: 40px; margin-left: 55px; margin-right: 55px;"></span>
                      @endforeach
                  </span>
