@@ -276,7 +276,7 @@
                                                          </h4>
                                                      </div>
                                                      <div class="product-price">
-                                                         <span class="price new-price">{{ $product->productVariants()->first()->price }}<span
+                                                         <span class="price new-price">{{ number_format($product->productVariants()->first()->price ) }}<span
                                              class="currency">VND</span></span>
                                                      </div>
                                                  </div>

@@ -23,12 +23,12 @@ class OrderSeeder extends Seeder
         $customerIds = Customer::pluck('id')->toArray();
 
         // Define date range for 2024-2025
-        $startDate = Carbon::createFromDate(2024, 1, 1)->startOfDay();
-        $endDate = Carbon::createFromDate(2025, 12, 31)->endOfDay();
+        $startDate = Carbon::createFromDate(2023, 1, 1)->startOfDay();
+        $endDate = Carbon::createFromDate(2025, 1, 1)->endOfDay();
 
         // Create 10,000 orders in batches for better performance
         $batchSize = 500;
-        for ($b = 0; $b < 20; $b++) {
+        for ($b = 0; $b < 3; $b++) {
             $orders = [];
 
             for ($i = 0; $i < $batchSize; $i++) {

@@ -51,12 +51,14 @@ class DatabaseSeeder extends Seeder
         ]);
         $customer->assignRole('customer');
 
-        // Create product categories
-        $productCategories = [
-            ['name' => 'Skincare', 'description' => 'Products related to skincare.'],
-            ['name' => 'Makeup', 'description' => 'Cosmetics for makeup application.'],
-            ['name' => 'Haircare', 'description' => 'Products for hair treatment and styling.'],
-        ];
+// Create product categories
+$productCategories = [
+    ['name' => 'Basas', 'description' => 'Simple, timeless shoes for everyday wear.'],
+    ['name' => 'Vintas', 'description' => 'Retro-inspired sneakers with a vintage vibe.'],
+    ['name' => 'Urbas', 'description' => 'Modern, urban-style shoes for active youth.'],
+    ['name' => 'Pattas', 'description' => 'Unique designs with bold patterns and collabs.'],
+];
+
 
         foreach ($productCategories as $category) {
             ProductCategory::create($category);
@@ -64,54 +66,76 @@ class DatabaseSeeder extends Seeder
 
         // Create products
         $products = [
-            ['name' => 'Moisturizer', 'product_category_id' => ProductCategory::where('name', 'Skincare')->first()->id],
-            ['name' => 'Foundation', 'product_category_id' => ProductCategory::where('name', 'Makeup')->first()->id],
-            ['name' => 'Shampoo', 'product_category_id' => ProductCategory::where('name', 'Haircare')->first()->id],
-            ['name' => 'Sunscreen', 'product_category_id' => ProductCategory::where('name', 'Skincare')->first()->id],
-            ['name' => 'Lipstick', 'product_category_id' => ProductCategory::where('name', 'Makeup')->first()->id],
-            ['name' => 'Conditioner', 'product_category_id' => ProductCategory::where('name', 'Haircare')->first()->id],
-            ['name' => 'Face Wash', 'product_category_id' => ProductCategory::where('name', 'Skincare')->first()->id],
+            ['name' => 'Workaday - Low Top - Black', 'product_category_id' => ProductCategory::where('name', 'Basas')->first()->id],
+            ['name' => 'Workaday - Low Top - Real Teal', 'product_category_id' => ProductCategory::where('name', 'Basas')->first()->id],
+            ['name' => 'Venim - Low Top - Night Sky', 'product_category_id' => ProductCategory::where('name', 'Vintas')->first()->id],
+            ['name' => 'Venim - High Top - Night Sky', 'product_category_id' => ProductCategory::where('name', 'Vintas')->first()->id],
+            ['name' => 'SC - Mule - Dark Purple', 'product_category_id' => ProductCategory::where('name', 'Urbas')->first()->id],
+            ['name' => 'SC - Mule - Foliage', 'product_category_id' => ProductCategory::where('name', 'Urbas')->first()->id],
+            ['name' => 'Polka Dots - Low Top - Black', 'product_category_id' => ProductCategory::where('name', 'Pattas')->first()->id],
+            ['name' => 'Polka Dots - High Top - Offwhite', 'product_category_id' => ProductCategory::where('name', 'Pattas')->first()->id],
+
         ];
 
         foreach ($products as $product) {
             Product::create($product);
         }
 
-        // Create product variants
-        $productVariants = [
-            ['name' => 'Moisturizer - 50ml', 'description' => '50ml hydrating moisturizer.', 'price' => 20, 'stock' => 100, 'sku' => 'MOI-001', 'product_id' => Product::where('name', 'Moisturizer')->first()->id],
-            ['name' => 'Moisturizer - 100ml', 'description' => '100ml hydrating moisturizer.', 'price' => 35, 'stock' => 80, 'sku' => 'MOI-002', 'product_id' => Product::where('name', 'Moisturizer')->first()->id],
-            ['name' => 'Foundation - Light', 'description' => 'Light shade liquid foundation.', 'price' => 25, 'stock' => 50, 'sku' => 'FND-001', 'product_id' => Product::where('name', 'Foundation')->first()->id],
-            ['name' => 'Foundation - Medium', 'description' => 'Medium shade liquid foundation.', 'price' => 25, 'stock' => 50, 'sku' => 'FND-002', 'product_id' => Product::where('name', 'Foundation')->first()->id],
-            ['name' => 'Foundation - Dark', 'description' => 'Dark shade liquid foundation.', 'price' => 25, 'stock' => 50, 'sku' => 'FND-003', 'product_id' => Product::where('name', 'Foundation')->first()->id],
-            ['name' => 'Shampoo - 100ml', 'description' => '100ml nourishing shampoo.', 'price' => 15, 'stock' => 100, 'sku' => 'SHA-001', 'product_id' => Product::where('name', 'Shampoo')->first()->id],
-            ['name' => 'Conditioner - 100ml', 'description' => '100ml moisturizing conditioner.', 'price' => 18, 'stock' => 90, 'sku' => 'CON-001', 'product_id' => Product::where('name', 'Conditioner')->first()->id],
-            ['name' => 'Sunscreen - SPF 50', 'description' => '50ml sunscreen with SPF 50.', 'price' => 30, 'stock' => 70, 'sku' => 'SUN-001', 'product_id' => Product::where('name', 'Sunscreen')->first()->id],
-            ['name' => 'Lipstick - Red', 'description' => 'Classic red lipstick.', 'price' => 22, 'stock' => 60, 'sku' => 'LIP-001', 'product_id' => Product::where('name', 'Lipstick')->first()->id],
-            ['name' => 'Face Wash - 200ml', 'description' => '200ml gentle face wash.', 'price' => 12, 'stock' => 120, 'sku' => 'FW-001', 'product_id' => Product::where('name', 'Face Wash')->first()->id],
-        ];
-
-        foreach ($productVariants as $variant) {
-            ProductVariant::create($variant);
+        $sizes = ['38', '39', '40', '41', '42'];
+        $description = "Gender: Unisex\nSize run: 35 – 46\nUpper: Canvas NE\nOutsole: Rubber";
+        
+        // Khởi tạo mảng đếm index theo danh mục
+        $categoryIndexCounters = [];
+        
+        // Lặp qua tất cả sản phẩm
+        $allProducts = Product::all();
+        
+        foreach ($allProducts as $product) {
+            // Lấy danh mục sản phẩm
+            $category = ProductCategory::find($product->product_category_id);
+            $prefix = strtoupper(substr($category->name, 0, 3)); // ví dụ: BAS, VIN, URB
+        
+            // Nếu danh mục chưa có trong mảng thì khởi tạo
+            if (!isset($categoryIndexCounters[$prefix])) {
+                $categoryIndexCounters[$prefix] = 0;
+            }
+        
+            // Lấy index hiện tại cho danh mục này
+            $currentIndex = $categoryIndexCounters[$prefix];
+        
+            foreach ($sizes as $size) {
+                $price = str_contains($product->name, 'High') ? 690000 : 580000;
+        
+                $sku = $prefix . '-' . $currentIndex . '-' . $size;
+        
+                ProductVariant::create([
+                    'name' => $size,
+                    'description' => $description,
+                    'price' => $price,
+                    'stock' => 100,
+                    'sku' => $sku,
+                    'product_id' => $product->id,
+                ]);
+            }
+        
+            // Sau khi xử lý xong 1 sản phẩm, tăng index danh mục lên 1
+            $categoryIndexCounters[$prefix]++;
         }
+        
 
-        // Create product variant images
-        $productVariantImages = [
-            ['product_variant_id' => ProductVariant::where('name', 'Moisturizer - 50ml')->first()->id, 'image_path' => 'https://via.placeholder.com/150', 'id' => null, 'updated_at' => now(), 'created_at' => now()],
-            ['product_variant_id' => ProductVariant::where('name', 'Moisturizer - 100ml')->first()->id, 'image_path' => 'https://via.placeholder.com/150', 'id' => null, 'updated_at' => now(), 'created_at' => now()],
-            ['product_variant_id' => ProductVariant::where('name', 'Foundation - Light')->first()->id, 'image_path' => 'https://via.placeholder.com/150', 'id' => null, 'updated_at' => now(), 'created_at' => now()],
-            ['product_variant_id' => ProductVariant::where('name', 'Foundation - Medium')->first()->id, 'image_path' => 'https://via.placeholder.com/150', 'id' => null, 'updated_at' => now(), 'created_at' => now()],
-            ['product_variant_id' => ProductVariant::where('name', 'Foundation - Dark')->first()->id, 'image_path' => 'https://via.placeholder.com/150', 'id' => null, 'updated_at' => now(), 'created_at' => now()],
-            ['product_variant_id' => ProductVariant::where('name', 'Shampoo - 100ml')->first()->id, 'image_path' => 'https://via.placeholder.com/150', 'id' => null, 'updated_at' => now(), 'created_at' => now()],
-            ['product_variant_id' => ProductVariant::where('name', 'Conditioner - 100ml')->first()->id, 'image_path' => 'https://via.placeholder.com/150', 'id' => null, 'updated_at' => now(), 'created_at' => now()],
-            ['product_variant_id' => ProductVariant::where('name', 'Sunscreen - SPF 50')->first()->id, 'image_path' => 'https://via.placeholder.com/150', 'id' => null, 'updated_at' => now(), 'created_at' => now()],
-            ['product_variant_id' => ProductVariant::where('name', 'Lipstick - Red')->first()->id, 'image_path' => 'https://via.placeholder.com/150', 'id' => null, 'updated_at' => now(), 'created_at' => now()],
-            ['product_variant_id' => ProductVariant::where('name', 'Face Wash - 200ml')->first()->id, 'image_path' => 'https://via.placeholder.com/150', 'id' => null, 'updated_at' => now(), 'created_at' => now()],
-        ];
 
-        foreach ($productVariantImages as $image) {
-            ProductVariantImage::create($image);
-        }
+        // Create product variant images for each product variant
+$productVariants = ProductVariant::all();
+
+foreach ($productVariants as $variant) {
+    ProductVariantImage::create([
+        'product_variant_id' => $variant->id,
+        'image_path' => 'https://placehold.co/336x400/png',
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+}
+
 
         // Run additional seeders in the correct order
         // Add memory optimization for large data sets

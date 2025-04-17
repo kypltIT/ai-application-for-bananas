@@ -9,7 +9,7 @@
         </a>
         <span>{{ $cartItem->productVariant->name }}</span> <br>
         <span class="quantity">{{ $cartItem->quantity }} × <span><span
-                    class="currency">$</span>{{ number_format($cartItem->productVariant->price, 0) }}</span></span>
+                    class="currency"></span>{{ number_format($cartItem->productVariant->price, 0) }}VND</span></span>
     </li>
 @endforeach
 

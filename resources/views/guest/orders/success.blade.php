@@ -69,9 +69,9 @@ Changes made:
                                                     </td>
                                                     <td class="text-center">{{ $item->quantity }}</td>
                                                     <td class="text-center">
-                                                        ${{ number_format($item->productVariant->price, 0) }}</td>
+                                                        {{ number_format($item->productVariant->price, 0) }}VND</td>
                                                     <td class="text-center">
-                                                        ${{ number_format($item->productVariant->price * $item->quantity, 0) }}
+                                                        {{ number_format($item->productVariant->price * $item->quantity, 0) }}VND
                                                     </td>
                                                 </tr>
                                             @endforeach
@@ -80,17 +80,17 @@ Changes made:
                                             <tr>
                                                 <td colspan="3" class="font-weight-bold">Subtotal</td>
                                                 <td class="text-center">
-                                                    <strong>${{ number_format($order->total_price, 0) }}</strong>
+                                                    <strong>{{ number_format($order->total_price, 0) }}VND</strong>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td colspan="3" class="font-weight-bold">Shipping Fee</td>
-                                                <td class="text-center">{{ number_format($order->shipping_fee) }}₫</td>
+                                                <td class="text-center">{{ number_format($order->shipping_fee) }}VND</td>
                                             </tr>
                                             <tr>
                                                 <td colspan="3" class="font-weight-bold"><strong>Total</strong></td>
                                                 <td class="text-center">
-                                                    <strong>${{ number_format($order->total_price, 0) }}</strong>
+                                                    <strong>{{ number_format($order->total_price, 0) }}VND</strong>
                                                 </td>
                                             </tr>
                                         </tfoot>
