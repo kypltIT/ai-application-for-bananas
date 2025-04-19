@@ -9,7 +9,8 @@
                 <div class="row">
                     <div class="col-sm-12">
                         <ul class="breadcrumb">
-                            <li class="breadcrumb-item active">Dashboard</li>
+                            <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">
+                                    Dashboard </a></li>
                         </ul>
                     </div>
                 </div>

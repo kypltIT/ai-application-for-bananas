@@ -20,24 +20,25 @@ class OrderItemSeeder extends Seeder
     {
         $faker = Faker::create();
 
-        // Get all product variants with their product IDs
-        $productVariants = ProductVariant::with('product')->get();
+        // Get all product variants
+        $productVariants = ProductVariant::all();
 
         // Process orders in batches to reduce memory usage
         Order::chunk(200, function ($orders) use ($faker, $productVariants) {
             $orderItems = [];
 
             foreach ($orders as $order) {
-                $itemCount = $faker->numberBetween(1, 5);
-                $selectedVariants = $faker->randomElements($productVariants->toArray(), min($itemCount, count($productVariants)));
+                $selectedVariants = $faker->randomElements($productVariants->toArray(), $faker->numberBetween(1, 5));
 
                 foreach ($selectedVariants as $variant) {
+                    $quantity = $faker->numberBetween(1, 5);
+
                     $orderItems[] = [
                         'id' => Str::uuid()->toString(),
                         'order_id' => $order->id,
                         'product_id' => $variant['product_id'],
                         'product_variant_id' => $variant['id'],
-                        'quantity' => $faker->numberBetween(1, 5),
+                        'quantity' => $quantity,
                         'created_at' => $order->created_at,
                         'updated_at' => $order->updated_at,
                     ];

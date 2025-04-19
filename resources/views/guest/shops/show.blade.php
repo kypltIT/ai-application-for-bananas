@@ -44,9 +44,9 @@
                         <div class="product-gallery-area mb-50" data-aos="fade-up" data-aos-duration="1200">
                            <div class="product-big-slider mb-30" id="product-big-slider">
     @foreach ($product->productVariants()->first()->productVariantImages as $image)
-        <div class="product-img" style="display: flex; justify-content: center; align-items: center; height: 600px; width: 504px; overflow: hidden;">
+        <div class="product-img" style="display: flex; justify-content: center; align-items: center; height: 500px; width: 500px; overflow: hidden;">
             <a href="{{ asset('storage/' . $image->image_path) }}" class="img-popup">
-                <img src="{{ asset('storage/' . $image->image_path) }}" style="width: 504px; height: 600px;" alt="Product">
+                <img src="{{ asset('storage/' . $image->image_path) }}" style="width: 500px; height: 500px;" alt="Product">
             </a>
         </div>
     @endforeach
@@ -337,10 +337,10 @@
                                 $relatedProduct->productVariants()->first() &&
                                     $relatedProduct->productVariants()->first()->productVariantImages()->first())
                                 <img src="{{ asset('storage/' . $relatedProduct->productVariants()->first()->productVariantImages()->first()->image_path) }}"
-                                    alt="Products" style="width: 336px; height: 400px;">
+                                    alt="Products" style="width: 336px; height: 336px;">
                             @else
                                 <img src="{{ asset('assets/guest/images/products/feature-product-1.png') }}"
-                                    alt="Products" style="width: 336px; height: 400px;">
+                                    alt="Products" style="width: 336px; height: 336px;">
                             @endif
                             <div class="discount">{{ $relatedProduct->productCategory->name }}</div>
                             <div class="hover-content">
@@ -427,62 +427,6 @@
                     $('#priceUpdate').text(new Intl.NumberFormat().format(data.price));
                     $('#sku').html("<strong>SKU:</strong> " + data.sku);
                     $('#description-content').html(data.description);
-                });
-
-            // Gọi API lấy ảnh của variant
-            fetch(`{{ route('shop.getProductVariantImages', ['variantId' => ':variantId']) }}`
-                    .replace(':variantId', variantId)
-                )
-                .then(response => response.json())
-                .then(data => {
-                    // 1. Xóa hình ảnh cũ trước khi thêm mới
-                    $('#product-big-slider').slick('unslick'); // Gỡ slick trước khi xóa
-                    $('#product-thumb-slider').slick('unslick');
-                    $('#product-big-slider').empty();
-                    $('#product-thumb-slider').empty();
-
-                    // 2. Thêm ảnh mới
-                    data.forEach(image => {
-                        const imgSrc = '{{ asset('storage/') }}' + '/' + image.image_path.replace(/\\/g, '/');
-
-                        $('#product-big-slider').append(
-                            '<div class="product-img" style="display: flex; justify-content: center; align-items: center; height: 600px; width: 504px; overflow: hidden;">' +
-                            '<a href="' + imgSrc + '" class="img-popup">' +
-                            '<img src="' + imgSrc + '" style="width: 504px; height: 600px;" alt="Product">' +
-                            '</a></div>'
-                        );
-
-                        $('#product-thumb-slider').append(
-                            '<div class="product-img"><img src="' + imgSrc + '" style="width: 150px; height: 160px;" alt="Product"></div>'
-                        );
-                    });
-
-                    // 3. Khởi động lại slick
-                    $('#product-big-slider').slick({
-                        dots: false,
-                        arrows: false,
-                        speed: 800,
-                        autoplay: true,
-                        fade: true,
-                        asNavFor: '.product-thumb-slider',
-                        slidesToShow: 1,
-                        slidesToScroll: 1,
-                        prevArrow: '<div class="prev"><i class="far fa-angle-left"></i></div>',
-                        nextArrow: '<div class="next"><i class="far fa-angle-right"></i></div>'
-                    });
-
-                    $('#product-thumb-slider').slick({
-                        dots: false,
-                        arrows: false,
-                        speed: 800,
-                        autoplay: true,
-                        asNavFor: '.product-big-slider',
-                        focusOnSelect: true,
-                        slidesToShow: 4,
-                        slidesToScroll: 1,
-                        prevArrow: '<div class="prev"><i class="far fa-angle-left"></i></div>',
-                        nextArrow: '<div class="next"><i class="far fa-angle-right"></i></div>'
-                    });
                 });
         });
     });
