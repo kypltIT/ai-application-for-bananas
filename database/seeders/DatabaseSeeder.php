@@ -5,6 +5,7 @@
 // - Made sure seeders run in the correct order (customers before orders, orders before order items)
 // - Updated DatabaseSeeder to call the seeders in the correct order
 // - Added memory usage optimizations for large datasets
+// - Added AnanasScrapedProductSeeder to create products from the Ananas categories based on actual website data
 
 namespace Database\Seeders;
 
@@ -115,16 +116,20 @@ class DatabaseSeeder extends Seeder
 
         // Run additional seeders in the correct order
         // Add memory optimization for large data sets
+        $this->command->info('Seeding Ananas products...');
+        // Choose one of these seeders:
+        // $this->call(AnanasProductSeeder::class); // Generic version
+
         $this->command->info('Seeding 1,000 customers...');
         $this->call(CustomerSeeder::class);
 
         $this->command->info('Seeding 10,000 orders...');
         $this->call(OrderSeeder::class);
 
-        $this->command->info('Seeding order items...');
-        $this->call(OrderItemSeeder::class);
-
         $this->command->info('Seeding 2,000 addresses...');
         $this->call(AddressSeeder::class);
+
+        $this->command->info('Seeding order items...');
+        $this->call(OrderItemSeeder::class);
     }
 }
