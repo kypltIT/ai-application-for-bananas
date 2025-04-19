@@ -1,3 +1,7 @@
+{{--
+    Updated to handle null values for customer, address, and related properties
+    Added null checks to prevent "Attempt to read property "name" on null" errors
+--}}
 @extends('layouts.admin.app')
 @section('title', 'Order Details')
 @section('content')
@@ -34,8 +38,8 @@
                             <div class="row">
                                 <div class="col-md-6" style="border-right: 1px solid #000">
                                     <h4>Customer Details</h4>
-                                    <p><strong>Customer:</strong> {{ $order->customer->name }}</p>
-                                    <p><strong>Customer Email:</strong> {{ $order->customer->email }}</p>
+                                    <p><strong>Customer:</strong> {{ $order->customer ? $order->customer->name : 'N/A' }}</p>
+                                    <p><strong>Customer Email:</strong> {{ $order->customer ? $order->customer->email : 'N/A' }}</p>
                                     <p><strong>Total:</strong> ${{ number_format($order->total_price, 0) }}</p>
                                     <p><strong>Order Date:</strong> {{ $order->created_at->format('Y-m-d H:i:s') }}</p>
                                     <p><strong>Order Status:</strong>
@@ -78,11 +82,15 @@
                                 </div>
                                 <div class="col-md-6">
                                     <h4>Shipping Address</h4>
-                                    <p><strong>Name Receiver:</strong> {{ $order->address->name }}</p>
-                                    <p><strong>Phone Receiver:</strong> {{ $order->address->phone }}</p>
-                                    <p><strong>Address Receiver:</strong> {{ $order->address->address }},
-                                        {{ $order->address->ward_name }}, {{ $order->address->district_name }},
-                                        {{ $order->address->city_name }}</p>
+                                    @if($order->address)
+                                        <p><strong>Name Receiver:</strong> {{ $order->address->name }}</p>
+                                        <p><strong>Phone Receiver:</strong> {{ $order->address->phone }}</p>
+                                        <p><strong>Address Receiver:</strong> {{ $order->address->address }},
+                                            {{ $order->address->ward_name }}, {{ $order->address->district_name }},
+                                            {{ $order->address->city_name }}</p>
+                                    @else
+                                        <p>No shipping address information available</p>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -107,9 +115,9 @@
                                     <tbody>
                                         @foreach ($order->orderItems as $item)
                                             <tr class="">
-                                                <td>{{ $item->product->name }}
+                                                <td>{{ $item->product ? $item->product->name : 'Unknown Product' }}
                                                     <br>
-                                                    <small>{{ $item->productVariant->name }}</small>
+                                                    <small>{{ $item->productVariant ? $item->productVariant->name : 'Unknown Variant' }}</small>
                                                 </td>
                                                 <td class="text-center">{{ $item->quantity }}</td>
                                                 <td class="text-center">${{ number_format($item->price, 0) }}</td>

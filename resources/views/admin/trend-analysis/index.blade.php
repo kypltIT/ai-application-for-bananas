@@ -79,7 +79,7 @@
                                                     <td>{{ $category->name }}</td>
                                                     <td>{{ $category->product_count }}</td>
                                                     <td>{{ $category->units_sold }}</td>
-                                                    <td>${{ number_format($category->revenue, 2) }}</td>
+                                                    <td>{{ number_format($category->revenue) }}VND</td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
@@ -129,7 +129,7 @@
                                 beginAtZero: false,
                                 ticks: {
                                     callback: function(value) {
-                                        return '$' + value.toLocaleString();
+                                        return  value.toLocaleString() + ' VND';
                                     }
                                 }
                             }
@@ -138,7 +138,7 @@
                             tooltip: {
                                 callbacks: {
                                     label: function(context) {
-                                        return 'Revenue: $' + context.parsed.y.toLocaleString();
+                                        return 'Revenue: ' + context.parsed.y.toLocaleString() + 'VND';
                                     }
                                 }
                             }
