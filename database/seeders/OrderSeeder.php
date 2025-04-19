@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Customer;
 use App\Models\Order;
+use App\Models\ProductVariant;
 use Illuminate\Database\Seeder;
 use Faker\Factory as Faker;
 use Illuminate\Support\Str;
@@ -22,6 +23,9 @@ class OrderSeeder extends Seeder
         // Get all customer IDs
         $customerIds = Customer::pluck('id')->toArray();
 
+        // Get all product variants
+        $productVariants = ProductVariant::all();
+
         // Define date range for 2024-2025
         $startDate = Carbon::createFromDate(2023, 1, 1)->startOfDay();
         $endDate = Carbon::createFromDate(2025, 4, 21)->endOfDay();
@@ -36,10 +40,19 @@ class OrderSeeder extends Seeder
                 $createdAt = $faker->dateTimeBetween($startDate, $endDate);
                 $formattedDate = $createdAt->format('Y-m-d H:i:s');
 
+                // Generate random order items and calculate total price
+                $orderItems = $faker->randomElements($productVariants->toArray(), $faker->numberBetween(1, 5));
+                $totalPrice = 0;
+
+                foreach ($orderItems as $item) {
+                    $quantity = $faker->numberBetween(1, 5);
+                    $totalPrice += $item['price'] * $quantity;
+                }
+
                 $orders[] = [
                     'id' => Str::uuid()->toString(),
                     'customer_id' => $faker->randomElement($customerIds),
-                    'total_price' => $faker->numberBetween(50000, 5000000),
+                    'total_price' => $totalPrice,
                     'status' => $faker->randomElement(['ordered', 'processing', 'completed', 'cancelled']),
                     'order_code' => 'BANANAS' . Str::random(10),
                     'order_note' => $faker->optional(0.7)->sentence,
