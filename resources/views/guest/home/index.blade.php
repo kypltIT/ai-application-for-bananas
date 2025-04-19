@@ -48,7 +48,7 @@
                      @foreach (getCategories() as $category)
                          <span class="marquee-item ms-3"><b
                                  style="color: {{ getPrimaryColor() }};">{{ $category->name }}</b><img
-                                 src="{{ asset('assets/guest/images/icon-01.ico') }}" alt="star"
+                                 src="{{ asset('assets/guest/images/icon-01.png') }}" alt="star"
                                  style="width: 40px; height: 40px; margin-left: 55px; margin-right: 55px;"></span>
                      @endforeach
                  </span>
@@ -56,7 +56,7 @@
                      @foreach (getCategories() as $category)
                          <span class="marquee-item ms-3"><b
                                  style="color: {{ getPrimaryColor() }};">{{ $category->name }}</b><img
-                                 src="{{ asset('assets/guest/images/icon-01.ico') }}" alt="star"
+                                 src="{{ asset('assets/guest/images/icon-01.png') }}" alt="star"
                                  style="width: 40px; height: 40px; margin-left: 55px; margin-right: 55px;"></span>
                      @endforeach
                  </span>
@@ -64,7 +64,7 @@
                      @foreach (getCategories() as $category)
                          <span class="marquee-item ms-3"><b
                                  style="color: {{ getPrimaryColor() }};">{{ $category->name }}</b><img
-                                 src="{{ asset('assets/guest/images/icon-01.ico') }}" alt="star"
+                                 src="{{ asset('assets/guest/images/icon-01.png') }}" alt="star"
                                  style="width: 40px; height: 40px; margin-left: 55px; margin-right: 55px;"></span>
                      @endforeach
                  </span>
@@ -183,25 +183,29 @@
                  </div>
              </div>
          </div>
-         <!--=== Category Slider ===-->
-         <div class="category-slider-one" data-aos="fade-up" data-aos-delay="20" data-aos-duration="1200">
-             <!--=== Category Item ===-->
-             @foreach (getCategories() as $category)
-                 <div class="category-item style-one text-center">
-                     <div class="category-img">
-                         @if ($category->image)
-                             <img src="{{ asset('storage/' . $category->image) }}" alt="category image">
-                         @else
-                             <img src="{{ asset('assets/guest/images/category/category-1.jpg') }}" alt="category image">
-                         @endif
-                     </div>
-                     <div class="category-content">
-                         <a href="{{ route('shop', ['category[]' => $category->id]) }}"
-                             class="category-btn">{{ $category->name }}</a>
-                     </div>
-                 </div>
-             @endforeach
-         </div>
+<!--=== Category Slider ===-->
+<div class="category-slider-one" data-aos="fade-up" data-aos-delay="20" data-aos-duration="1200">
+    <!--=== Category Item ===-->
+    @php
+        $index = 1;
+    @endphp
+    @foreach (getCategories() as $category)
+        <div class="category-item style-one text-center">
+            <div class="category-img">
+                <img src="{{ asset('assets/guest/images/category/category-' . $index . '.png') }}" alt="category image">
+            </div>
+            <div class="category-content">
+                <a href="{{ route('shop', ['category[]' => $category->id]) }}" class="category-btn">
+                    {{ $category->name }}
+                </a>
+            </div>
+        </div>
+        @php
+            $index++;
+        @endphp
+    @endforeach
+</div>
+
      </section><!--====== End Category Section ======-->
      <!--====== Start Banner Section ======-->
 
@@ -276,7 +280,7 @@
                                                          </h4>
                                                      </div>
                                                      <div class="product-price">
-                                                         <span class="price new-price">{{ $product->productVariants()->first()->price }}<span
+                                                         <span class="price new-price">{{ number_format($product->productVariants()->first()->price ) }}<span
                                              class="currency">VND</span></span>
                                                      </div>
                                                  </div>

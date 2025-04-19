@@ -54,7 +54,7 @@
                                     <i class="fas fa-users fa-2x mb-2"></i>
                                     <h4 class="font-weight-bold text-uppercase">Total Customers</h4>
                                     <h2 style="color: #2E37A4;">{{ $totalCustomers }}</h2>
-                                    <p class="text-muted">Number of Registered Customers</p>
+                                    <p class="text-muted">Number of Customers</p>
                                 </div>
                             </div>
                         </div>
@@ -66,8 +66,8 @@
                             <div class="dash-widget-header">
                                 <div class="dash-content">
                                     <i class="fas fa-dollar-sign fa-2x mb-2"></i>
-                                    <h4 class="font-weight-bold text-uppercase">Total Revenue</h4>
-                                    <h2 style="color: #2E37A4;">${{ number_format($totalRevenue, 2, '.', ',') }}</h2>
+                                    <h4 class="font-weight-bold text-uppercase">Total Revenue (VND)</h4>
+                                    <h2 style="color: #2E37A4;">{{ number_format($totalRevenue) }}</h2>
                                     <p class="text-muted">Total Revenue Generated</p>
                                 </div>
                             </div>
@@ -138,7 +138,7 @@
             <!-- Location-based Sales Charts -->
             <div class="row">
                 <!-- City Sales Chart -->
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <div class="card card-chart">
                         <div class="card-header">
                             <h4 class="card-title">Top Cities by Sales</h4>
@@ -150,7 +150,7 @@
                 </div>
 
                 <!-- District Sales Chart -->
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <div class="card card-chart">
                         <div class="card-header">
                             <h4 class="card-title">Top Districts by Sales</h4>
@@ -161,7 +161,7 @@
                     </div>
                 </div>
 
-                <!-- Ward Sales Chart -->
+                {{-- <!-- Ward Sales Chart -->
                 <div class="col-md-4">
                     <div class="card card-chart">
                         <div class="card-header">
@@ -171,7 +171,7 @@
                             <div id="ward-sales-chart"></div>
                         </div>
                     </div>
-                </div>
+                </div> --}}
             </div>
 
             <div class="row">
@@ -200,7 +200,7 @@
                                                         href="{{ route('admin.orders.show', $order->id) }}">{{ $order->order_code }}</a>
                                                 </td>
                                                 <td>{{ $order->customer->name }}</td>
-                                                <td>${{ number_format($order->total_price, 2, '.', ',') }}</td>
+                                                <td>{{ number_format($order->total_price) }}VND</td>
                                                 <td>
                                                     @if ($order->status == 'completed')
                                                         <span class="badge bg-success">Completed</span>
@@ -304,7 +304,7 @@
             tooltip: {
                 y: {
                     formatter: function(val) {
-                        return '$' + val.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                        return  val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",", ) + 'VND';
                     }
                 }
             },
@@ -347,14 +347,14 @@
                 categories: cityNames,
                 labels: {
                     formatter: function(val) {
-                        return '$' + val.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                        return  val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",", );
                     }
                 }
             },
             tooltip: {
                 y: {
                     formatter: function(val) {
-                        return val.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + ' đ';
+                        return  val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",", ) + 'VND';
                     }
                 }
             }
@@ -394,14 +394,14 @@
                 categories: districtNames,
                 labels: {
                     formatter: function(val) {
-                        return '$' + val.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                        return  val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",", );
                     }
                 }
             },
             tooltip: {
                 y: {
                     formatter: function(val) {
-                        return '$' + val.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                        return  val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",", ) + 'VND';
                     }
                 }
             }
@@ -411,51 +411,51 @@
             districtSalesChartOptions);
         districtSalesChart.render();
 
-        // Ward sales chart
-        var wardSalesData = @json($wardSales);
-        var wardNames = wardSalesData.map(item => item.name);
-        var wardRevenues = wardSalesData.map(item => parseInt(item.revenue));
+        // // Ward sales chart
+        // var wardSalesData = @json($wardSales);
+        // var wardNames = wardSalesData.map(item => item.name);
+        // var wardRevenues = wardSalesData.map(item => parseInt(item.revenue));
 
-        var wardSalesChartOptions = {
-            series: [{
-                name: 'Revenue',
-                data: wardRevenues
-            }],
-            chart: {
-                type: 'bar',
-                height: 350,
-                toolbar: {
-                    show: false
-                }
-            },
-            plotOptions: {
-                bar: {
-                    borderRadius: 4,
-                    horizontal: true,
-                }
-            },
-            dataLabels: {
-                enabled: true
-            },
-            colors: ['#fd7e14'],
-            xaxis: {
-                categories: wardNames,
-                labels: {
-                    formatter: function(val) {
-                        return '$' + val.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-                    }
-                }
-            },
-            tooltip: {
-                y: {
-                    formatter: function(val) {
-                        return '$' + val.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-                    }
-                }
-            }
-        };
+        // var wardSalesChartOptions = {
+        //     series: [{
+        //         name: 'Revenue',
+        //         data: wardRevenues
+        //     }],
+        //     chart: {
+        //         type: 'bar',
+        //         height: 350,
+        //         toolbar: {
+        //             show: false
+        //         }
+        //     },
+        //     plotOptions: {
+        //         bar: {
+        //             borderRadius: 4,
+        //             horizontal: true,
+        //         }
+        //     },
+        //     dataLabels: {
+        //         enabled: true
+        //     },
+        //     colors: ['#fd7e14'],
+        //     xaxis: {
+        //         categories: wardNames,
+        //         labels: {
+        //             formatter: function(val) {
+        //                 return  val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",", ) + 'VND';
+        //             }
+        //         }
+        //     },
+        //     tooltip: {
+        //         y: {
+        //             formatter: function(val) {
+        //                 return  val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",", ) + 'VND';
+        //             }
+        //         }
+        //     }
+        // };
 
-        var wardSalesChart = new ApexCharts(document.querySelector("#ward-sales-chart"), wardSalesChartOptions);
-        wardSalesChart.render();
+        // var wardSalesChart = new ApexCharts(document.querySelector("#ward-sales-chart"), wardSalesChartOptions);
+        // wardSalesChart.render();
     });
 </script>

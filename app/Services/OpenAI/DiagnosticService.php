@@ -43,7 +43,7 @@ class DiagnosticService
                     ]
                 ],
                 'temperature' => 0.2, // Lower temperature for more factual responses
-                'max_tokens' => 1000
+                'max_tokens' => 2048
             ]);
 
             $result = $response->json();

@@ -36,21 +36,21 @@ Changes made:
                                             </p>
                                         </div>
                                         <div class="price">x {{ $item->quantity }} =
-                                            ${{ number_format($item->productVariant->price * $item->quantity, 0) }}</div>
+                                            {{ number_format($item->productVariant->price * $item->quantity, 0) }}VND</div>
                                     </li>
                                 @endforeach
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     <span>Subtotal</span>
-                                    <span class="price">${{ number_format($order->total_price, 0) }}</span>
+                                    <span class="price">{{ number_format($order->total_price, 0) }}VND</span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     <span>Shipping Fee</span>
-                                    <span class="price">${{ number_format($order->shipping_fee, 0) }}</span>
+                                    <span class="price">{{ number_format($order->shipping_fee, 0) }}VND</span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
                                     <span>Total Amount</span>
                                     <span
-                                        class="price">${{ number_format($order->total_price + $order->shipping_fee, 0) }}</span>
+                                        class="price">{{ number_format($order->total_price + $order->shipping_fee, 0) }}VND</span>
                                 </li>
                             </ul>
 

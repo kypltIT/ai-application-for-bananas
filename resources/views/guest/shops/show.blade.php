@@ -42,16 +42,17 @@
                 <div class="row">
                     <div class="col-xl-6">
                         <div class="product-gallery-area mb-50" data-aos="fade-up" data-aos-duration="1200">
-                            <div class="product-big-slider mb-30" id="product-big-slider">
-                                @foreach ($product->productVariants()->first()->productVariantImages as $image)
-                                    <div class="product-img">
-                                        <a href="{{ asset('storage/' . $image->image_path) }}" class="img-popup"><img
-                                                src="{{ asset('storage/' . $image->image_path) }}"
-                                                style="width: 646px; height: 587px;" alt="Product"></a>
-                                    </div>
-                                @endforeach
-                            </div>
-                            <div class="product-thumb-slider" id="product-thumb-slider">
+                           <div class="product-big-slider mb-30" id="product-big-slider">
+    @foreach ($product->productVariants()->first()->productVariantImages as $image)
+        <div class="product-img" style="display: flex; justify-content: center; align-items: center; height: 600px; width: 504px; overflow: hidden;">
+            <a href="{{ asset('storage/' . $image->image_path) }}" class="img-popup">
+                <img src="{{ asset('storage/' . $image->image_path) }}" style="width: 504px; height: 600px;" alt="Product">
+            </a>
+        </div>
+    @endforeach
+</div>
+
+                            {{-- <div class="product-thumb-slider" id="product-thumb-slider">
                                 @foreach ($product->productVariants()->first()->productVariantImages as $image)
                                     <div class="product-img">
                                         <img src="{{ asset('storage/' . $image->image_path) }}"
@@ -59,7 +60,7 @@
                                     </div>
                                 @endforeach
 
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
                     <div class="col-xl-6">
@@ -72,12 +73,12 @@
                                     class="fas fa-tags"></i>{{ strtoupper($product->productCategory->name) }}</span>
                             <h4 class="title">{{ $product->name }}</h4>
                             {{-- <div class="product-price">
-                                <span class="price new-price">Price: $<span
-                                        id="priceUpdate">{{ number_format($product->productVariants()->first()->price, 0) }}</span></span>
+                                <span class="price new-price">Price: <span
+                                        id="priceUpdate">{{ number_format($product->productVariants()->first()->price) }}</span>VND</span>
                             </div> --}}
                             <div class="product-price">
-                                <span class="price new-price">Price: $<span
-                                        id="priceUpdate">{{ number_format($product->productVariants()->first()->price, 2) }}</span></span>
+                                <span class="price new-price">Price: <span
+                                        id="priceUpdate">{{ number_format($product->productVariants()->first()->price) }}</span>VND</span>
                             </div>
                             <div class="product-size">
                                 <h4 class="mb-15">Variants</h4>
@@ -367,8 +368,8 @@
                             </div>
                             <div class="product-price">
                                 <span class="price new-price"><span
-                                        class="currency">$</span>{{ number_format($relatedProduct->productVariants()->min('price'), 2) }}
-                                    - ${{ number_format($relatedProduct->productVariants()->max('price'), 2) }}</span>
+                                        class="currency"></span>{{ number_format($relatedProduct->productVariants()->min('price')) }}VND
+                                    - {{ number_format($relatedProduct->productVariants()->max('price')) }}VND</span>
                             </div>
                         </div>
                     </div>
@@ -411,87 +412,81 @@
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            // Lắng nghe sự thay đổi khi người dùng chọn radio
-            $('input[name="radio"]').change(function() {
-                // Gửi yêu cầu lấy thông tin variant
-                const productId = $(this).data('product-id');
-                const variantId = $(this).data('variant-id');
-                fetch(
-                        `{{ route('shop.getVariantOfProduct', ['productId' => ':productId', 'variantId' => ':variantId']) }}`
-                        .replace(':productId', productId).replace(':variantId', variantId))
-                    .then(response => response.json())
-                    .then(data => {
-                        $('#priceUpdate').text(data.price);
-                        $('#sku').html("<strong>SKU:</strong> " + data.sku);
-                        $('#description-content').html(data.description);
+<script>
+    $(document).ready(function() {
+        $('input[name="radio"]').change(function() {
+            const productId = $(this).data('product-id');
+            const variantId = $(this).data('variant-id');
+
+            // Gọi API để lấy dữ liệu variant
+            fetch(
+                    `{{ route('shop.getVariantOfProduct', ['productId' => ':productId', 'variantId' => ':variantId']) }}`
+                    .replace(':productId', productId).replace(':variantId', variantId))
+                .then(response => response.json())
+                .then(data => {
+                    $('#priceUpdate').text(new Intl.NumberFormat().format(data.price));
+                    $('#sku').html("<strong>SKU:</strong> " + data.sku);
+                    $('#description-content').html(data.description);
+                });
+
+            // Gọi API lấy ảnh của variant
+            fetch(`{{ route('shop.getProductVariantImages', ['variantId' => ':variantId']) }}`
+                    .replace(':variantId', variantId)
+                )
+                .then(response => response.json())
+                .then(data => {
+                    // 1. Xóa hình ảnh cũ trước khi thêm mới
+                    $('#product-big-slider').slick('unslick'); // Gỡ slick trước khi xóa
+                    $('#product-thumb-slider').slick('unslick');
+                    $('#product-big-slider').empty();
+                    $('#product-thumb-slider').empty();
+
+                    // 2. Thêm ảnh mới
+                    data.forEach(image => {
+                        const imgSrc = '{{ asset('storage/') }}' + '/' + image.image_path.replace(/\\/g, '/');
+
+                        $('#product-big-slider').append(
+                            '<div class="product-img" style="display: flex; justify-content: center; align-items: center; height: 600px; width: 504px; overflow: hidden;">' +
+                            '<a href="' + imgSrc + '" class="img-popup">' +
+                            '<img src="' + imgSrc + '" style="width: 504px; height: 600px;" alt="Product">' +
+                            '</a></div>'
+                        );
+
+                        $('#product-thumb-slider').append(
+                            '<div class="product-img"><img src="' + imgSrc + '" style="width: 150px; height: 160px;" alt="Product"></div>'
+                        );
                     });
 
-
-                fetch(
-                        `{{ route('shop.getProductVariantImages', ['variantId' => ':variantId']) }}`
-                        .replace(':variantId', variantId)
-                    )
-                    .then(response => response.json())
-                    .then(data => {
-
-                        // Thêm hình ảnh vào product-big-slider
-                        data.forEach(image => {
-                            $('#product-big-slider').append(
-                                '<div class="product-img"><a href="' +
-                                '{{ asset('storage/') }}' + '/' + image.image_path.replace(
-                                    /\\/g, '/') +
-                                '" class="img-popup"><img src="' +
-                                '{{ asset('storage/') }}' + '/' + image.image_path.replace(
-                                    /\\/g, '/') +
-                                '" style="width: 646px; height: 587px;" alt="Product"></a></div>'
-                            );
-                        });
-
-                        // Thêm hình ảnh vào product-thumb-slider
-                        data.forEach(image => {
-                            $('#product-thumb-slider').append(
-                                '<div class="product-img"><img src="' +
-                                '{{ asset('storage/') }}' + '/' + image.image_path.replace(
-                                    /\\/g, '/') +
-                                '" style="width: 150px; height: 160px;" alt="Product"></div>'
-                            );
-                        });
-
-                        // Gọi lại slick sau khi đã thêm hình ảnh vào slider
-                        $('#product-big-slider').slick('unslick').slick({
-                            // Thêm các tùy chọn Slick slider của bạn ở đây
-                            dots: false,
-                            arrows: false,
-                            speed: 800,
-                            autoplay: true,
-                            fade: true,
-                            asNavFor: '.product-thumb-slider',
-                            slidesToShow: 1,
-                            slidesToScroll: 1,
-                            prevArrow: '<div class="prev"><i class="far fa-angle-left"></i></div>',
-                            nextArrow: '<div class="next"><i class="far fa-angle-right"></i></div>'
-                        });
-
-                        $('#product-thumb-slider').slick('unslick').slick({
-                            // Thêm các tùy chọn Slick slider của bạn ở đây
-                            dots: false,
-                            arrows: false,
-                            speed: 800,
-                            autoplay: true,
-                            asNavFor: '.product-big-slider',
-                            focusOnSelect: true,
-                            slidesToShow: 4,
-                            slidesToScroll: 1,
-                            prevArrow: '<div class="prev"><i class="far fa-angle-left"></i></div>',
-                            nextArrow: '<div class="next"><i class="far fa-angle-right"></i></div>'
-                        });
+                    // 3. Khởi động lại slick
+                    $('#product-big-slider').slick({
+                        dots: false,
+                        arrows: false,
+                        speed: 800,
+                        autoplay: true,
+                        fade: true,
+                        asNavFor: '.product-thumb-slider',
+                        slidesToShow: 1,
+                        slidesToScroll: 1,
+                        prevArrow: '<div class="prev"><i class="far fa-angle-left"></i></div>',
+                        nextArrow: '<div class="next"><i class="far fa-angle-right"></i></div>'
                     });
 
-            });
+                    $('#product-thumb-slider').slick({
+                        dots: false,
+                        arrows: false,
+                        speed: 800,
+                        autoplay: true,
+                        asNavFor: '.product-big-slider',
+                        focusOnSelect: true,
+                        slidesToShow: 4,
+                        slidesToScroll: 1,
+                        prevArrow: '<div class="prev"><i class="far fa-angle-left"></i></div>',
+                        nextArrow: '<div class="next"><i class="far fa-angle-right"></i></div>'
+                    });
+                });
         });
-    </script>
+    });
+</script>
 
     <script>
         function updateCartItems() {

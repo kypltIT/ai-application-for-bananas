@@ -19,7 +19,7 @@
         <!--====== Start Header Section ======-->
         <header id="header-area" class="header-area">
             <!--===  Search Header Main  ===-->
-            <div class="search-header-main">
+            <div class="search-header-main gray-bg" style="background-color:;">
                 <div class="container">
                     <!--===  Search Header Inner  ===-->
                     <div class="search-header-inner">
@@ -44,8 +44,8 @@
 
                         </div>
                         <!--===  Product Search Category  ===-->
-                        <div class="product-search-category">
-                            <form action="{{ route('shop') }}" method="get">
+                        <div class="product-search-category" >
+                            <form action="{{ route('shop') }}" method="get" style="background-color: #ffffff">
                                 <select class="wide" name="category[]">
                                     <option value="">All Categories</option>
                                     @foreach (getCategories() as $category)

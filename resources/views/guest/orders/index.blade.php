@@ -64,7 +64,7 @@
                                                     <div class="form_group">
                                                         <label>Phone Number <span>*</span></label>
                                                         <input type="text" class="form_control"
-                                                            placeholder="Ex: +1 (555) 123-4567" name="phone"
+                                                            placeholder="Ex: (+84) 385 123 456" name="phone"
                                                             value="{{ old('phone') }}" required>
 
                                                     </div>
@@ -158,7 +158,7 @@
                                                         </div>
                                                         <div class="product-total">
                                                             <span class="currency">Quantity: {{ $cartItem->quantity }} x
-                                                                $</span>{{ number_format($cartItem->productVariant->price, 0) }}
+                                                                </span>{{ number_format($cartItem->productVariant->price, 0) }}VND
                                                         </div>
                                                     </div>
                                                 @endforeach
@@ -166,7 +166,7 @@
                                                     <div class="subtotal">Total</div>
                                                     <div class="product-total">
                                                         <span
-                                                            class="currency">$</span>{{ number_format(getCartTotal(), 0) }}
+                                                            class="currency"></span>{{ number_format(getCartTotal(), 0) }}VND
                                                     </div>
                                                 </div>
 

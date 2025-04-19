@@ -2,7 +2,7 @@
     <div class="cart-mini-total">
         <div class="cart-total">
             <span><strong>Subtotal:</strong></span> <span class="amount"> <span><span
-                        class="currency">$</span>{{ number_format(getCartTotal(), 0) }}</span></span>
+                        class="currency"></span>{{ number_format(getCartTotal(), 0) }}VND</span></span>
         </div>
     </div>
 

@@ -2,7 +2,7 @@
     <div class="sidebar-inner slimscroll">
         <div id="sidebar-menu" class="sidebar-menu">
             <ul>
-                <li class="menu-title">Main</li>
+                <li class="menu-title"></li>
                 {{-- <li class="submenu">
                     <a href="#"><span class="menu-side"><img
                                 src="{{ asset('assets/admin/img/icons/menu-icon-01.svg') }}" alt=""></span>
@@ -17,35 +17,31 @@
                 <li>
                     <a class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"
                         href="{{ route('admin.dashboard') }}"><span class="menu-side"><img
-                                src="{{ asset('assets/admin/img/icons/menu-icon-10.svg') }}" alt=""></span>
+                                src="{{ asset('assets/admin/img/icons/menu-icon-01.svg') }}" alt=""></span>
                         <span>Dashboard</span></a>
                 </li>
 
                 <li>
                     <a class="{{ request()->routeIs('admin.product-categories.index') ? 'active' : '' }}"
-                        href="{{ route('admin.product-categories.index') }}"><span class="menu-side"><img
-                                src="{{ asset('assets/admin/img/icons/menu-icon-10.svg') }}" alt=""></span>
+                        href="{{ route('admin.product-categories.index') }}"><span class="menu-side"><i class="fa fa-table"></i></span>
                         <span>Product Categories</span></a>
                 </li>
 
                 <li>
                     <a class="{{ request()->routeIs('admin.products.index') ? 'active' : '' }}"
-                        href="{{ route('admin.products.index') }}"><span class="menu-side"><img
-                                src="{{ asset('assets/admin/img/icons/menu-icon-10.svg') }}" alt=""></span>
+                        href="{{ route('admin.products.index') }}"><span class="menu-side"><i class="fa fa-shopping-bag"></i></span>
                         <span>Products</span></a>
                 </li>
 
                 <li>
                     <a class="{{ request()->routeIs('admin.orders.index') ? 'active' : '' }}"
-                        href="{{ route('admin.orders.index') }}"><span class="menu-side"><img
-                                src="{{ asset('assets/admin/img/icons/menu-icon-10.svg') }}" alt=""></span>
+                        href="{{ route('admin.orders.index') }}"><span class="menu-side"><i class="fa fa-shopping-cart"></i></span>
                         <span>Orders</span></a>
                 </li>
 
                 <li>
                     <a class="{{ request()->routeIs('admin.customers.index') ? 'active' : '' }}"
-                        href="{{ route('admin.customers.index') }}"><span class="menu-side"><img
-                                src="{{ asset('assets/admin/img/icons/menu-icon-10.svg') }}" alt=""></span>
+                        href="{{ route('admin.customers.index') }}"><span class="menu-side"><i class="fa fa-user"></i></span>
                         <span>Customers</span></a>
                 </li>
 
@@ -63,7 +59,7 @@
 
                 <li class="submenu">
                     <a href="#"><span class="menu-side"><img
-                                src="{{ asset('assets/admin/img/icons/menu-icon-01.svg') }}" alt=""></span>
+                                src="{{ asset('assets/admin/img/icons/menu-icon-13.svg') }}" alt=""></span>
                         <span>Blog</span> <span class="menu-arrow"></span></a>
                     <ul style="display: none;">
                         <li><a class="{{ request()->routeIs('admin.blog-categories.index') ? 'active' : '' }}"
@@ -82,15 +78,14 @@
 
                 <li>
                     <a class="{{ request()->routeIs('admin.trend-analysis.index') ? 'active' : '' }}"
-                        href="{{ route('admin.trend-analysis.index') }}"><span class="menu-side"><img
-                                src="{{ asset('assets/admin/img/icons/menu-icon-10.svg') }}" alt=""></span>
+                        href="{{ route('admin.trend-analysis.index') }}"><span class="menu-side"><i class="fa fa-chart-simple"></i></span>
                         <span>Trend Analysis</span></a>
                 </li>
 
                 <li>
                     <a class="{{ request()->routeIs('admin.logout') ? 'active' : '' }}" style="cursor: pointer;"
                         onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><span
-                            class="menu-side"><img src="{{ asset('assets/admin/img/icons/menu-icon-10.svg') }}"
+                            class="menu-side"><img src="{{ asset('assets/admin/img/icons/logout.svg') }}"
                                 alt=""></span>
                         <span>Logout</span></a>
                     <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" style="display: none;">

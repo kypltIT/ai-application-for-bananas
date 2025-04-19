@@ -3,6 +3,7 @@
 // Extended the forecast period from 3 to 6 months and improved the structure of recommendations
 // Modified prompt to request structured chart data for direct visualization in frontend charts
 // Improved JSON extraction and handling for revenue forecasts, category impacts, and regional recommendations
+// Added integration with external data sources including market trends, customer behavior, and marketing campaigns
 
 namespace App\Http\Controllers\Admin;
 
@@ -14,6 +15,7 @@ use App\Services\OpenAI\DiagnosticService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class TrendAnalysisController extends Controller
 {
@@ -44,26 +46,32 @@ class TrendAnalysisController extends Controller
     public function analyze(Request $request)
     {
         $validated = $request->validate([
-            'fashion_trend' => 'required|string|max:500',
             'forecast_period' => 'required|integer|min:3|max:12',
         ]);
 
-        // Get sales data
+        // Get internal sales data
         $monthlySales = $this->getMonthlySalesData();
         $categoryPerformance = $this->getCategoryPerformanceData();
         $revenueByRegion = $this->getRevenueByRegionData();
+
+        // Get external data
+        $marketTrends = $this->getMarketTrendsData();
+        $customerBehavior = $this->getCustomerBehaviorData();
+        $marketingCampaigns = $this->getMarketingCampaignsData();
 
         // Prepare data for AI analysis
         $analysisData = [
             'sales_data' => $monthlySales,
             'category_performance' => $categoryPerformance,
             'revenue_by_region' => $revenueByRegion,
-            'trend' => $validated['fashion_trend'],
+            'market_trends' => $marketTrends,
+            'customer_behavior' => $customerBehavior,
+            'marketing_campaigns' => $marketingCampaigns,
             'forecast_period' => $validated['forecast_period'],
         ];
 
         // Get AI analysis
-        $prompt = "You are a senior market analysis expert for a fashion retail business with deep knowledge of retail operations and inventory management. Analyze the following sales data in relation to the described fashion trend.
+        $prompt = "You are a senior market analysis expert for a fashion retail business with deep knowledge of retail operations and inventory management. Analyze the following sales data in relation to the described fashion trend, incorporating insights from external data sources.
 
         IMPORTANT: Your response MUST begin with a valid JSON block containing chart data. Don't include any introductory text before the JSON. The JSON must be formatted exactly as in the following example, with no alterations to the structure:
 
@@ -83,7 +91,12 @@ class TrendAnalysisController extends Controller
             {\"category\": \"Accessories\", \"growth_percentage\": 10, \"impact\": \"positive\"},
             {\"category\": \"Pants\", \"growth_percentage\": 0, \"impact\": \"neutral\"}
           ],
-          \"recommended_regions\": [\"New York\", \"Los Angeles\", \"Miami\"]
+          \"recommended_regions\": [\"New York\", \"Los Angeles\", \"Miami\"],
+          \"external_factors\": {
+            \"market_trends\": [\"sustainable_fashion\", \"digital_nomad_style\"],
+            \"customer_preferences\": [\"eco_friendly\", \"comfort_first\"],
+            \"campaign_impact\": [\"summer_sale\", \"back_to_school\"]
+          }
         }
         ```
 
@@ -91,30 +104,38 @@ class TrendAnalysisController extends Controller
         - \"forecast\": An array of {{forecast_period}} objects with month and revenue predictions for the next {{forecast_period}} months.
         - \"category_impact\": An array of objects for each product category, with growth_percentage and impact assessment.
         - \"recommended_regions\": An array of strings with recommended regions to focus on.
+        - \"external_factors\": An object containing arrays of relevant market trends, customer preferences, and campaign impacts.
 
-        Use the actual category names from the provided data. Calculate realistic growth percentages based on the trend.
+        Use the actual category names from the provided data. Calculate realistic growth percentages based on the trend and external data.
 
         Task: Identify potential best-selling products and categories for the near future, explaining the reasons behind their potential success. Additionally, provide strategic recommendations to mitigate revenue declines by adjusting inventory, shifting products, and leveraging promotional strategies.
 
         Instructions:
 
-        Identify Trending Products and Categories: Analyze current market trends and consumer behaviors to predict products and categories that could become best-sellers in the near future. Consider emerging trends like sustainability, health, wellness, new market trends, and AI-integrated devices,...
+        Identify Trending Products and Categories: Analyze current market trends and consumer behaviors to predict products and categories that could become best-sellers in the near future. Consider:
+        - Emerging market trends from external sources
+        - Customer behavior patterns and preferences
+        - Impact of current and planned marketing campaigns
+        - Industry reports and fashion forecasts
+        - Social media trends and influencer impact
 
-        Provide Reasons for Their Success: Explain the factors driving demand for each identified category or product. Consider consumer interest shifts, technological advancements, and market gaps that are being addressed.
+        Provide Reasons for Their Success: Explain the factors driving demand for each identified category or product. Consider:
+        - Consumer interest shifts from external data
+        - Technological advancements and market gaps
+        - Marketing campaign effectiveness
+        - Regional preferences and cultural influences
+        - Seasonal and event-based opportunities
 
         Strategic Recommendations to Reduce Revenue Decline:
 
         Suggest strategies for mitigating revenue drops:
 
-        - Reduce production or imports for slow-moving products.
-
-        - Shift inventory from less popular areas to higher-performing ones.
-
-        - Implement cross-selling and bundling strategies to clear stagnant stock.
-
-        - Utilize promotional tactics like discounts, limited-time offers, and exclusive deals to boost sales of underperforming products.
-
-        - Suggest tracking market trends and customer feedback to stay agile and make data-driven adjustments.
+        - Align inventory with market trends and customer preferences
+        - Optimize marketing campaigns based on customer behavior data
+        - Implement targeted promotions for underperforming categories
+        - Adjust product mix based on external market insights
+        - Leverage successful campaign elements across regions
+        - Monitor and respond to emerging market trends
 
         Output Format: A list of identified best-selling products and categories with reasons for their potential success. A set of actionable recommendations for handling slow-moving products, inventory adjustments, and promotional strategies to prevent revenue drops. Format your response with clear section headings and bullet points for easy reading. Prioritize specific, measurable recommendations over general advice.";
 
@@ -137,6 +158,9 @@ class TrendAnalysisController extends Controller
             'monthlySales',
             'categoryPerformance',
             'revenueByRegion',
+            'marketTrends',
+            'customerBehavior',
+            'marketingCampaigns',
             'analysis'
         ));
     }
@@ -327,5 +351,90 @@ class TrendAnalysisController extends Controller
             ->groupBy('cities.id', 'cities.full_name_en')
             ->orderBy('revenue', 'desc')
             ->get();
+    }
+
+    /**
+     * Get market trends data from external sources
+     */
+    private function getMarketTrendsData()
+    {
+        // Example implementation - replace with actual API calls
+        return [
+            'sustainable_fashion' => [
+                'trend_score' => 0.85,
+                'growth_rate' => 0.25,
+                'source' => 'Fashion Industry Report 2023'
+            ],
+            'digital_nomad_style' => [
+                'trend_score' => 0.72,
+                'growth_rate' => 0.18,
+                'source' => 'Social Media Analysis'
+            ],
+            'minimalist_design' => [
+                'trend_score' => 0.68,
+                'growth_rate' => 0.15,
+                'source' => 'Consumer Survey'
+            ]
+        ];
+    }
+
+    /**
+     * Get customer behavior data from analytics
+     */
+    private function getCustomerBehaviorData()
+    {
+        // Example implementation - replace with actual analytics data
+        return [
+            'preferences' => [
+                'eco_friendly' => 0.78,
+                'comfort_first' => 0.82,
+                'price_sensitive' => 0.65
+            ],
+            'purchase_patterns' => [
+                'online_vs_store' => ['online' => 0.65, 'store' => 0.35],
+                'seasonal_peaks' => ['summer' => 0.45, 'winter' => 0.35],
+                'average_basket_size' => 2.5
+            ],
+            'demographics' => [
+                'age_groups' => ['18-24' => 0.25, '25-34' => 0.35, '35-44' => 0.25],
+                'gender_distribution' => ['female' => 0.65, 'male' => 0.35]
+            ]
+        ];
+    }
+
+    /**
+     * Get marketing campaigns data
+     */
+    private function getMarketingCampaignsData()
+    {
+        // Example implementation - replace with actual campaign data
+        return [
+            'active_campaigns' => [
+                'summer_sale' => [
+                    'start_date' => '2023-06-01',
+                    'end_date' => '2023-08-31',
+                    'discount_rate' => 0.20,
+                    'target_categories' => ['summer_dresses', 'swimwear']
+                ],
+                'back_to_school' => [
+                    'start_date' => '2023-07-15',
+                    'end_date' => '2023-09-15',
+                    'discount_rate' => 0.15,
+                    'target_categories' => ['casual_wear', 'accessories']
+                ]
+            ],
+            'campaign_performance' => [
+                'summer_sale' => [
+                    'conversion_rate' => 0.12,
+                    'average_order_value' => 500000,
+                    'customer_acquisition' => 1200
+                ],
+                'back_to_school' => [
+                    'conversion_rate' => 0.08,
+                    'average_order_value' => 500000,
+                    'customer_acquisition' => 800
+                ]
+            ]
+        ];
     }
 }

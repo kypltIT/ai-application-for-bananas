@@ -95,17 +95,12 @@
                             <div class="widget-content">
                                 <h4 class="widget-title">Customer Services</h4>
                                 <ul class="widget-menu">
-                                    <li><img src="{{ asset('assets/guest/images/icon-01.ico') }}"
-                                            alt="star icon"><a href="#">Collections & Delivery</a></li>
-                                    <li><img src="{{ asset('assets/guest/images/icon-01.ico') }}"
-                                            alt="star icon"><a href="#">Returns & Refunds</a></li>
-                                    <li><img src="{{ asset('assets/guest/images/icon-01.ico') }}"
-                                            alt="star icon"><a href="#">Terms
+                                    <li><a href="#">Collections & Delivery</a></li>
+                                    <li><a href="#">Returns & Refunds</a></li>
+                                    <li><a href="#">Terms
                                             & Conditions</a></li>
-                                    <li><img src="{{ asset('assets/guest/images/icon-01.ico') }}"
-                                            alt="star icon"><a href="#">Delivery Return</a></li>
-                                    <li><img src="{{ asset('assets/guest/images/icon-01.ico') }}"
-                                            alt="star icon"><a href="#">Store
+                                    <li><a href="#">Delivery Return</a></li>
+                                    <li><a href="#">Store
                                             Locations</a></li>
                                 </ul>
                             </div>
@@ -119,17 +114,12 @@
                             <div class="widget-content">
                                 <h4 class="widget-title">Quick Link</h4>
                                 <ul class="widget-menu">
-                                    <li><img src="{{ asset('assets/guest/images/icon-01.ico') }}"
-                                            alt="star icon"><a href="#">Privacy Policy</a></li>
-                                    <li><img src="{{ asset('assets/guest/images/icon-01.ico') }}"
-                                            alt="star icon"><a href="#">Terms
+                                    <li><a href="#">Privacy Policy</a></li>
+                                    <li><a href="#">Terms
                                             Of Use</a></li>
-                                    <li><img src="{{ asset('assets/guest/images/icon-01.ico') }}"
-                                            alt="star icon"><a href="#">FAQ</a></li>
-                                    <li><img src="{{ asset('assets/guest/images/icon-01.ico') }}"
-                                            alt="star icon"><a href="#">Contact</a></li>
-                                    <li><img src="{{ asset('assets/guest/images/icon-01.ico') }}"
-                                            alt="star icon"><a href="#">Login
+                                    <li><a href="#">FAQ</a></li>
+                                    <li><a href="#">Contact</a></li>
+                                    <li><a href="#">Login
                                             / Register</a></li>
                                 </ul>
                             </div>

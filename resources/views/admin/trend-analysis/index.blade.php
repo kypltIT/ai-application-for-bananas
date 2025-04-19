@@ -24,14 +24,6 @@
                                 <form action="{{ route('admin.trend-analysis.analyze') }}" method="POST">
                                     @csrf
                                     <div class="form-group">
-                                        <label for="fashion_trend">Describe Current Fashion Trends</label>
-                                        <textarea class="form-control" id="fashion_trend" name="fashion_trend" rows="3"
-                                            placeholder="E.g., Sustainable fashion is gaining popularity with eco-friendly materials and minimalist designs becoming mainstream..."
-                                            required>{{ old('fashion_trend') }}</textarea>
-                                        <small class="form-text text-muted">Describe current fashion trends that you want to
-                                            analyze for your business strategy</small>
-                                    </div>
-                                    <div class="form-group">
                                         <label for="forecast_period">Forecast Period (months)</label>
                                         <select class="form-control" id="forecast_period" name="forecast_period">
                                             <option value="3">3 months</option>
@@ -87,7 +79,7 @@
                                                     <td>{{ $category->name }}</td>
                                                     <td>{{ $category->product_count }}</td>
                                                     <td>{{ $category->units_sold }}</td>
-                                                    <td>${{ number_format($category->revenue, 2) }}</td>
+                                                    <td>{{ number_format($category->revenue) }}VND</td>
                                                 </tr>
                                             @endforeach
                                         </tbody>
@@ -137,7 +129,7 @@
                                 beginAtZero: false,
                                 ticks: {
                                     callback: function(value) {
-                                        return '$' + value.toLocaleString();
+                                        return  value.toLocaleString() + ' VND';
                                     }
                                 }
                             }
@@ -146,7 +138,7 @@
                             tooltip: {
                                 callbacks: {
                                     label: function(context) {
-                                        return 'Revenue: $' + context.parsed.y.toLocaleString();
+                                        return 'Revenue: ' + context.parsed.y.toLocaleString() + 'VND';
                                     }
                                 }
                             }

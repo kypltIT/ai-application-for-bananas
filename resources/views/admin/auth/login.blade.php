@@ -81,7 +81,7 @@
                                     </form>
                                     <!-- /Form -->
 
-                                    <div class="next-sign">
+                                    {{-- <div class="next-sign">
                                         <p class="account-subtitle">Login with social media:</p>
 
                                         <!-- Social Login -->
@@ -98,7 +98,7 @@
                                         </div>
                                         <!-- /Social Login -->
 
-                                    </div>
+                                    </div> --}}
                                 </div>
                             </div>
                         </div>

@@ -20,6 +20,47 @@
 
             <div class="row">
                 <div class="col-sm-12">
+                    <!-- Filter Form -->
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <form action="{{ route('admin.orders.index') }}" method="GET" class="row g-3">
+                                <div class="col-md-3">
+                                    <label for="search" class="form-label">Search</label>
+                                    <input type="text" class="form-control" id="search" name="search"
+                                        placeholder="Search by order code, customer name, or note"
+                                        value="{{ request('search') }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="status" class="form-label">Status</label>
+                                    <select name="status" id="status" class="form-select">
+                                        <option value="">All Status</option>
+                                        <option value="ordered" {{ request('status') == 'ordered' ? 'selected' : '' }}>
+                                            Ordered</option>
+                                        <option value="processing"
+                                            {{ request('status') == 'processing' ? 'selected' : '' }}>Processing</option>
+                                        <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>
+                                            Completed</option>
+                                        <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>
+                                            Cancelled</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="start_date" class="form-label">Start Date</label>
+                                    <input type="date" class="form-control" id="start_date" name="start_date"
+                                        value="{{ request('start_date') }}">
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="end_date" class="form-label">End Date</label>
+                                    <input type="date" class="form-control" id="end_date" name="end_date"
+                                        value="{{ request('end_date') }}">
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary me-2">Filter</button>
+                                    <a href="{{ route('admin.orders.index') }}" class="btn btn-secondary">Reset</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
 
                     <div class="card card-table show-entire">
                         <div class="card-body">
@@ -120,12 +161,16 @@
                                             <!-- Delete Modal -->
                                         @endforeach
                                     </tbody>
+
                                 </table>
                             </div>
-
+                            <ul class="pagination ">
+                                {!! $orders->links() !!}
+                            </ul>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
