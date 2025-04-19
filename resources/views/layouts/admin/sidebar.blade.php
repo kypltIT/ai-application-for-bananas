@@ -83,6 +83,12 @@
                 </li>
 
                 <li>
+                    <a class="{{ request()->routeIs('admin.statistics') ? 'active' : '' }}"
+                        href="{{ route('admin.statistics') }}"><span class="menu-side"><i class="fa fa-chart-simple"></i></span>
+                        <span>Statistics</span></a>
+                </li>
+
+                <li>
                     <a class="{{ request()->routeIs('admin.logout') ? 'active' : '' }}" style="cursor: pointer;"
                         onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><span
                             class="menu-side"><img src="{{ asset('assets/admin/img/icons/logout.svg') }}"

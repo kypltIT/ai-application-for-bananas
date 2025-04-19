@@ -164,9 +164,9 @@
 
                                 </table>
                             </div>
-                            <ul class="pagination ">
+                            {{-- <ul class="pagination ">
                                 {!! $orders->links() !!}
-                            </ul>
+                            </ul> --}}
                         </div>
                     </div>
                 </div>

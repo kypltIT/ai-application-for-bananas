@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\BlogCategoryController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\TrendAnalysisController;
+use App\Http\Controllers\Admin\StatisticsController;
 
 Route::middleware(['auth', 'checkRole:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('users', UserController::class);
@@ -49,6 +50,9 @@ Route::middleware(['auth', 'checkRole:admin'])->prefix('admin')->name('admin.')-
     // Fashion Trend Analysis routes
     Route::get('/trend-analysis', [TrendAnalysisController::class, 'index'])->name('trend-analysis.index');
     Route::post('/trend-analysis/analyze', [TrendAnalysisController::class, 'analyze'])->name('trend-analysis.analyze');
+
+    Route::get('/statistics', [StatisticsController::class, 'index'])->name('statistics');
+    Route::get('/statistics/data', [StatisticsController::class, 'getStatistics'])->name('statistics.data');
 });
 
 

@@ -134,7 +134,7 @@
                                             <li>
                                                 <strong>{{ ucwords(str_replace('_', ' ', $campaign)) }}</strong><br>
                                                 Conversion: {{ number_format($data['conversion_rate'] * 100, 1) }}%<br>
-                                                Avg. Order: {{ number_format($data['average_order_value']) }}VND
+                                                Avg. Order: ${{ number_format($data['average_order_value'], 2) }}
                                             </li>
                                         @endforeach
                                     </ul>
@@ -219,7 +219,7 @@
                                                     <td>{{ $category->name }}</td>
                                                     <td>{{ $category->product_count }}</td>
                                                     <td>{{ $category->units_sold }}</td>
-                                                    <td>{{ number_format($category->revenue) }}VND</td>
+                                                    <td>${{ number_format($category->revenue, 2) }}</td>
                                                     <td id="growth-{{ $category->id }}">Analyzing...</td>
                                                     <td id="impact-{{ $category->id }}">Analyzing...</td>
                                                 </tr>
@@ -342,7 +342,7 @@
                             beginAtZero: false,
                             ticks: {
                                 callback: function(value) {
-                                    return value.toLocaleString() + ' VND';
+                                    return '$' + value.toLocaleString();
                                 }
                             }
                         }
@@ -456,7 +456,7 @@
                             beginAtZero: true,
                             ticks: {
                                 callback: function(value) {
-                                    return value.toLocaleString() + ' VND';
+                                    return '$' + value.toLocaleString();
                                 }
                             }
                         }
@@ -465,7 +465,7 @@
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    let label = `Revenue: ${context.parsed.y.toLocaleString()} + VND`;
+                                    let label = `Revenue: $${context.parsed.y.toLocaleString()}`;
                                     if (recommendedRegions.includes(context.label.toLowerCase())) {
                                         label += ' (Recommended)';
                                     }
