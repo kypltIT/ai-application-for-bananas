@@ -24,14 +24,6 @@
                                 <form action="{{ route('admin.trend-analysis.analyze') }}" method="POST">
                                     @csrf
                                     <div class="form-group">
-                                        <label for="fashion_trend">Describe Current Fashion Trends</label>
-                                        <textarea class="form-control" id="fashion_trend" name="fashion_trend" rows="3"
-                                            placeholder="E.g., Sustainable fashion is gaining popularity with eco-friendly materials and minimalist designs becoming mainstream..."
-                                            required>{{ old('fashion_trend') }}</textarea>
-                                        <small class="form-text text-muted">Describe current fashion trends that you want to
-                                            analyze for your business strategy</small>
-                                    </div>
-                                    <div class="form-group">
                                         <label for="forecast_period">Forecast Period (months)</label>
                                         <select class="form-control" id="forecast_period" name="forecast_period">
                                             <option value="3">3 months</option>

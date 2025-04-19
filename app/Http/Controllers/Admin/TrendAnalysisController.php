@@ -44,7 +44,6 @@ class TrendAnalysisController extends Controller
     public function analyze(Request $request)
     {
         $validated = $request->validate([
-            'fashion_trend' => 'required|string|max:500',
             'forecast_period' => 'required|integer|min:3|max:12',
         ]);
 
@@ -58,7 +57,6 @@ class TrendAnalysisController extends Controller
             'sales_data' => $monthlySales,
             'category_performance' => $categoryPerformance,
             'revenue_by_region' => $revenueByRegion,
-            'trend' => $validated['fashion_trend'],
             'forecast_period' => $validated['forecast_period'],
         ];
 
@@ -78,10 +76,10 @@ class TrendAnalysisController extends Controller
             {\"month\": \"December 2023\", \"revenue\": 150000}
           ],
           \"category_impact\": [
-            {\"category\": \"Dresses\", \"growth_percentage\": 15, \"impact\": \"positive\"},
-            {\"category\": \"Shirts\", \"growth_percentage\": -5, \"impact\": \"negative\"},
-            {\"category\": \"Accessories\", \"growth_percentage\": 10, \"impact\": \"positive\"},
-            {\"category\": \"Pants\", \"growth_percentage\": 0, \"impact\": \"neutral\"}
+            {\"category\": \"Basas\", \"growth_percentage\": 15, \"impact\": \"positive\"},
+            {\"category\": \"Vintas\", \"growth_percentage\": -5, \"impact\": \"negative\"},
+            {\"category\": \"Urbas\", \"growth_percentage\": 10, \"impact\": \"positive\"},
+            {\"category\": \"Pattas\", \"growth_percentage\": 0, \"impact\": \"neutral\"}
           ],
           \"recommended_regions\": [\"New York\", \"Los Angeles\", \"Miami\"]
         }

@@ -183,25 +183,29 @@
                  </div>
              </div>
          </div>
-         <!--=== Category Slider ===-->
-         <div class="category-slider-one" data-aos="fade-up" data-aos-delay="20" data-aos-duration="1200">
-             <!--=== Category Item ===-->
-             @foreach (getCategories() as $category)
-                 <div class="category-item style-one text-center">
-                     <div class="category-img">
-                         @if ($category->image)
-                             <img src="{{ asset('storage/' . $category->image) }}" alt="category image">
-                         @else
-                             <img src="{{ asset('assets/guest/images/category/category-1.jpg') }}" alt="category image">
-                         @endif
-                     </div>
-                     <div class="category-content">
-                         <a href="{{ route('shop', ['category[]' => $category->id]) }}"
-                             class="category-btn">{{ $category->name }}</a>
-                     </div>
-                 </div>
-             @endforeach
-         </div>
+<!--=== Category Slider ===-->
+<div class="category-slider-one" data-aos="fade-up" data-aos-delay="20" data-aos-duration="1200">
+    <!--=== Category Item ===-->
+    @php
+        $index = 1;
+    @endphp
+    @foreach (getCategories() as $category)
+        <div class="category-item style-one text-center">
+            <div class="category-img">
+                <img src="{{ asset('assets/guest/images/category/category-' . $index . '.png') }}" alt="category image">
+            </div>
+            <div class="category-content">
+                <a href="{{ route('shop', ['category[]' => $category->id]) }}" class="category-btn">
+                    {{ $category->name }}
+                </a>
+            </div>
+        </div>
+        @php
+            $index++;
+        @endphp
+    @endforeach
+</div>
+
      </section><!--====== End Category Section ======-->
      <!--====== Start Banner Section ======-->
 

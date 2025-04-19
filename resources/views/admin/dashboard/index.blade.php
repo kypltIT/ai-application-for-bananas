@@ -67,7 +67,7 @@
                                 <div class="dash-content">
                                     <i class="fas fa-dollar-sign fa-2x mb-2"></i>
                                     <h4 class="font-weight-bold text-uppercase">Total Revenue</h4>
-                                    <h2 style="color: #2E37A4;">${{ number_format($totalRevenue, 2, '.', ',') }}</h2>
+                                    <h2 style="color: #2E37A4;">{{ number_format($totalRevenue) }}VND</h2>
                                     <p class="text-muted">Total Revenue Generated</p>
                                 </div>
                             </div>

@@ -24,7 +24,7 @@ class OrderSeeder extends Seeder
 
         // Define date range for 2024-2025
         $startDate = Carbon::createFromDate(2023, 1, 1)->startOfDay();
-        $endDate = Carbon::createFromDate(2025, 1, 1)->endOfDay();
+        $endDate = Carbon::createFromDate(2025, 4, 21)->endOfDay();
 
         // Create 10,000 orders in batches for better performance
         $batchSize = 500;
@@ -41,7 +41,7 @@ class OrderSeeder extends Seeder
                     'customer_id' => $faker->randomElement($customerIds),
                     'total_price' => $faker->numberBetween(50000, 5000000),
                     'status' => $faker->randomElement(['ordered', 'processing', 'completed', 'cancelled']),
-                    'order_code' => 'BIHA' . Str::random(10),
+                    'order_code' => 'BANANAS' . Str::random(10),
                     'order_note' => $faker->optional(0.7)->sentence,
                     'created_at' => $formattedDate,
                     'updated_at' => $formattedDate,

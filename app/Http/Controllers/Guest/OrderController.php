@@ -122,7 +122,7 @@ class OrderController extends Controller
         $bank = "MBBank";
         $account = "79678988889999";
 
-        $qrCodeUrl = "https://qr.sepay.vn/img?acc=$account&bank=$bank&amount=" . ($totalPrice * 1000) . "&des=$orderCode&template=TEMPLATE&download=DOWNLOAD";
+        $qrCodeUrl = "https://qr.sepay.vn/img?acc=$account&bank=$bank&amount=" . ($totalPrice * 1) . "&des=$orderCode&template=TEMPLATE&download=DOWNLOAD";
 
         return $qrCodeUrl;
     }
