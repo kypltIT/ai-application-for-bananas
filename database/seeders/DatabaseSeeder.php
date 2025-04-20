@@ -52,13 +52,13 @@ class DatabaseSeeder extends Seeder
         ]);
         $customer->assignRole('customer');
 
-// Create product categories
-$productCategories = [
-    ['name' => 'Basas', 'description' => 'Simple, timeless shoes for everyday wear.'],
-    ['name' => 'Vintas', 'description' => 'Retro-inspired sneakers with a vintage vibe.'],
-    ['name' => 'Urbas', 'description' => 'Modern, urban-style shoes for active youth.'],
-    ['name' => 'Pattas', 'description' => 'Unique designs with bold patterns and collabs.'],
-];
+        // Create product categories
+        $productCategories = [
+            ['name' => 'Basas', 'description' => 'Simple, timeless shoes for everyday wear.'],
+            ['name' => 'Vintas', 'description' => 'Retro-inspired sneakers with a vintage vibe.'],
+            ['name' => 'Urbas', 'description' => 'Modern, urban-style shoes for active youth.'],
+            ['name' => 'Pattas', 'description' => 'Unique designs with bold patterns and collabs.'],
+        ];
 
 
         foreach ($productCategories as $category) {
@@ -84,31 +84,31 @@ $productCategories = [
 
         $sizes = ['38', '39', '40', '41', '42'];
         $description = "Gender: Unisex\nSize run: 35 – 46\nUpper: Canvas NE\nOutsole: Rubber";
-        
+
         // Khởi tạo mảng đếm index theo danh mục
         $categoryIndexCounters = [];
-        
+
         // Lặp qua tất cả sản phẩm
         $allProducts = Product::all();
-        
+
         foreach ($allProducts as $product) {
             // Lấy danh mục sản phẩm
             $category = ProductCategory::find($product->product_category_id);
             $prefix = strtoupper(substr($category->name, 0, 3)); // ví dụ: BAS, VIN, URB
-        
+
             // Nếu danh mục chưa có trong mảng thì khởi tạo
             if (!isset($categoryIndexCounters[$prefix])) {
                 $categoryIndexCounters[$prefix] = 0;
             }
-        
+
             // Lấy index hiện tại cho danh mục này
             $currentIndex = $categoryIndexCounters[$prefix];
-        
+
             foreach ($sizes as $size) {
                 $price = str_contains($product->name, 'High') ? 690000 : 580000;
-        
+
                 $sku = $prefix . '-' . $currentIndex . '-' . $size;
-        
+
                 ProductVariant::create([
                     'name' => $size,
                     'description' => $description,
@@ -118,24 +118,24 @@ $productCategories = [
                     'product_id' => $product->id,
                 ]);
             }
-        
+
             // Sau khi xử lý xong 1 sản phẩm, tăng index danh mục lên 1
             $categoryIndexCounters[$prefix]++;
         }
-        
+
 
 
         // Create product variant images for each product variant
-$productVariants = ProductVariant::all();
+        $productVariants = ProductVariant::all();
 
-foreach ($productVariants as $variant) {
-    ProductVariantImage::create([
-        'product_variant_id' => $variant->id,
-        'image_path' => 'https://placehold.co/336x400/png',
-        'created_at' => now(),
-        'updated_at' => now(),
-    ]);
-}
+        foreach ($productVariants as $variant) {
+            ProductVariantImage::create([
+                'product_variant_id' => $variant->id,
+                'image_path' => 'https://placehold.co/336x400/png',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
 
 
         // Run additional seeders in the correct order
@@ -147,13 +147,16 @@ foreach ($productVariants as $variant) {
         $this->command->info('Seeding 1,000 customers...');
         $this->call(CustomerSeeder::class);
 
+        // $this->command->info('Seeding 2,000 addresses...');
+        // $this->call(AddressSeeder::class);
+
         $this->command->info('Seeding 10,000 orders...');
         $this->call(OrderSeeder::class);
 
-        $this->command->info('Seeding 2,000 addresses...');
-        $this->call(AddressSeeder::class);
-
         $this->command->info('Seeding order items...');
         $this->call(OrderItemSeeder::class);
+
+        $this->command->info('Seeding transactions...');
+        $this->call(TransactionSeeder::class);
     }
 }

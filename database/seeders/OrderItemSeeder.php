@@ -25,13 +25,14 @@ class OrderItemSeeder extends Seeder
 
         // Process orders in batches to reduce memory usage
         Order::chunk(200, function ($orders) use ($faker, $productVariants) {
-            $orderItems = [];
-
             foreach ($orders as $order) {
+                $orderItems = [];
+                $totalPrice = 0;
                 $selectedVariants = $faker->randomElements($productVariants->toArray(), $faker->numberBetween(1, 5));
 
                 foreach ($selectedVariants as $variant) {
                     $quantity = $faker->numberBetween(1, 5);
+                    $totalPrice += $variant['price'] * $quantity;
 
                     $orderItems[] = [
                         'id' => Str::uuid()->toString(),
@@ -42,18 +43,15 @@ class OrderItemSeeder extends Seeder
                         'created_at' => $order->created_at,
                         'updated_at' => $order->updated_at,
                     ];
-
-                    // Insert in batches of 100
-                    if (count($orderItems) >= 100) {
-                        DB::table('order_items')->insert($orderItems);
-                        $orderItems = [];
-                    }
                 }
-            }
 
-            // Insert any remaining order items
-            if (count($orderItems) > 0) {
+                // Insert order items
                 DB::table('order_items')->insert($orderItems);
+
+                // Update order's total_price
+                DB::table('orders')
+                    ->where('id', $order->id)
+                    ->update(['total_price' => $totalPrice]);
             }
         });
     }

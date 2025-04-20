@@ -38,8 +38,10 @@
                             <div class="row">
                                 <div class="col-md-6" style="border-right: 1px solid #000">
                                     <h4>Customer Details</h4>
-                                    <p><strong>Customer:</strong> {{ $order->customer ? $order->customer->name : 'N/A' }}</p>
-                                    <p><strong>Customer Email:</strong> {{ $order->customer ? $order->customer->email : 'N/A' }}</p>
+                                    <p><strong>Customer:</strong> {{ $order->customer ? $order->customer->name : 'N/A' }}
+                                    </p>
+                                    <p><strong>Customer Email:</strong>
+                                        {{ $order->customer ? $order->customer->email : 'N/A' }}</p>
                                     <p><strong>Total:</strong> ${{ number_format($order->total_price, 0) }}</p>
                                     <p><strong>Order Date:</strong> {{ $order->created_at->format('Y-m-d H:i:s') }}</p>
                                     <p><strong>Order Status:</strong>
@@ -82,7 +84,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <h4>Shipping Address</h4>
-                                    @if($order->address)
+                                    @if ($order->address)
                                         <p><strong>Name Receiver:</strong> {{ $order->address->name }}</p>
                                         <p><strong>Phone Receiver:</strong> {{ $order->address->phone }}</p>
                                         <p><strong>Address Receiver:</strong> {{ $order->address->address }},
@@ -120,9 +122,11 @@
                                                     <small>{{ $item->productVariant ? $item->productVariant->name : 'Unknown Variant' }}</small>
                                                 </td>
                                                 <td class="text-center">{{ $item->quantity }}</td>
-                                                <td class="text-center">${{ number_format($item->price, 0) }}</td>
                                                 <td class="text-center">
-                                                    ${{ number_format($item->price * $item->quantity, 0) }}</td>
+                                                    ${{ number_format($item->productVariant->price, 0) }}</td>
+                                                <td class="text-center">
+                                                    ${{ number_format($item->productVariant->price * $item->quantity, 0) }}
+                                                </td>
                                             </tr>
                                         @endforeach
                                     </tbody>
