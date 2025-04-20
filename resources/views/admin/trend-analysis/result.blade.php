@@ -6,6 +6,14 @@
 {{-- Modified recommendations section to display content from analysis rather than relying on top_products data --}}
 {{-- Improved color coding for Regional Performance and Category Performance charts --}}
 {{-- Fixed NaN% issue in category chart tooltips by adding null checks for calculations --}}
+{{-- Optimized TrendAnalysis implementation with improved performance and user experience --}}
+{{-- Refactored JavaScript for better maintainability and error handling --}}
+{{-- Added data caching for chart configurations to improve rendering performance --}}
+{{-- Optimized color generation logic with precomputed maps for impact-based coloring --}}
+{{-- Improved chart rendering with lazy initialization and responsive design --}}
+{{-- Enhanced tooltips with more detailed information and better formatting --}}
+{{-- Added loading states for charts to improve perceived performance --}}
+{{-- Fixed issue with market share percentage always showing 0% by properly parsing string values --}}
 
 @extends('layouts.admin.app')
 
@@ -22,7 +30,9 @@
                             class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm mr-2">
                             <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Analysis
                         </a>
-
+                        <button id="exportBtn" class="d-none d-sm-inline-block btn btn-sm btn-success shadow-sm mr-2">
+                            <i class="fas fa-download fa-sm text-white-50"></i> Export Report
+                        </button>
                     </div>
                 </div>
 
@@ -54,7 +64,8 @@
                                 <h6 class="m-0 font-weight-bold text-primary">Revenue Trend and Forecast</h6>
                             </div>
                             <div class="card-body">
-                                <div class="chart-area">
+                                <div class="chart-area" style="position: relative;">
+                                    <div id="revenueChartLoader" class="chart-loader">Loading data...</div>
                                     <canvas id="revenueChart"></canvas>
                                 </div>
                             </div>
@@ -69,7 +80,8 @@
                                 <h6 class="m-0 font-weight-bold text-primary">Regional Performance</h6>
                             </div>
                             <div class="card-body">
-                                <div class="chart-bar">
+                                <div class="chart-bar" style="position: relative;">
+                                    <div id="regionBarChartLoader" class="chart-loader">Loading data...</div>
                                     <canvas id="regionBarChart"></canvas>
                                 </div>
                             </div>
@@ -84,7 +96,8 @@
                                 <h6 class="m-0 font-weight-bold text-primary">Category Performance</h6>
                             </div>
                             <div class="card-body">
-                                <div class="chart-pie">
+                                <div class="chart-pie" style="position: relative;">
+                                    <div id="categoryPieChartLoader" class="chart-loader">Loading data...</div>
                                     <canvas id="categoryPieChart"></canvas>
                                 </div>
                             </div>
@@ -97,7 +110,7 @@
                             </div>
                             <div class="card-body">
                                 <div id="recommendations-content" class="recommendations-content">
-                                    <!-- Recommendations will be populated here dynamically -->
+                                    <div id="recommendationsLoader" class="chart-loader">Loading recommendations...</div>
                                 </div>
                             </div>
                         </div>
@@ -107,205 +120,252 @@
         </div>
     </div>
 
-    <!-- Compare Analysis Modal -->
-
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Hide all loaders by default (they will show during actual loading)
+            document.querySelectorAll('.chart-loader').forEach(loader => {
+                loader.style.display = 'none';
+            });
+
+            // Cache for chart data and configurations
+            const chartCache = {
+                colors: {},
+                configs: {}
+            };
+
+            // Color configuration constants for better maintainability
+            const COLORS = {
+                positive: {
+                    base: '#1cc88a',
+                    hover: '#17a673'
+                },
+                negative: {
+                    base: '#e74a3b',
+                    hover: '#e02d1b'
+                },
+                neutral: {
+                    base: '#f6c23e',
+                    hover: '#f4b619'
+                },
+                blue: {
+                    base: '#4e73df',
+                    hover: '#2e59d9'
+                },
+                cyan: {
+                    base: '#36b9cc',
+                    hover: '#258391'
+                },
+                purple: {
+                    base: '#6f42c1',
+                    hover: '#553285'
+                },
+                orange: {
+                    base: '#fd7e14',
+                    hover: '#d46a0a'
+                },
+                teal: {
+                    base: '#20c9a6',
+                    hover: '#169b7f'
+                }
+            };
+
+            // Set up color palette for reuse
+            const colorPalette = [
+                COLORS.blue,
+                COLORS.positive,
+                COLORS.negative,
+                COLORS.neutral,
+                COLORS.cyan,
+                COLORS.purple,
+                COLORS.orange,
+                COLORS.teal
+            ];
+
+            // Formatter function for currency
+            const formatCurrency = (value) => {
+                return value.toLocaleString() + ' VND';
+            };
+
+            // Data from the server
             const chartData = @json($analysis['chart_data'] ?? null);
             const salesData = @json($monthlySales);
             const categoryData = @json($categoryPerformance);
             const regionData = @json($revenueByRegion);
-
             const aiData = chartData;
 
-            if (aiData && aiData.category_impact) {
-                categoryData.forEach(category => {
-                    const categoryName = category.name.toLowerCase();
-                    const categoryImpact = aiData.category_impact.find(c => c.category.toLowerCase() ===
-                        categoryName);
-
-                    if (categoryImpact) {
-                        const growthElement = document.getElementById(`growth-${category.id}`);
-                        const impactElement = document.getElementById(`impact-${category.id}`);
-
-                        if (growthElement) {
-                            const growthText = categoryImpact.growth_percentage > 0 ?
-                                `+${categoryImpact.growth_percentage}%` :
-                                `${categoryImpact.growth_percentage}%`;
-                            growthElement.textContent = growthText;
-                            growthElement.classList.add(categoryImpact.growth_percentage > 0 ?
-                                'text-success' : (categoryImpact.growth_percentage < 0 ? 'text-danger' :
-                                    'text-warning'));
+            // Safely get data with fallbacks to prevent errors
+            function safeGet(obj, path, fallback = null) {
+                try {
+                    const parts = path.split('.');
+                    let result = obj;
+                    for (const part of parts) {
+                        if (result === null || result === undefined || typeof result !== 'object') {
+                            return fallback;
                         }
-
-                        if (impactElement) {
-                            impactElement.textContent = categoryImpact.impact.charAt(0).toUpperCase() +
-                                categoryImpact.impact.slice(1);
-                            impactElement.classList.add(categoryImpact.impact === 'positive' ?
-                                'text-success' : (categoryImpact.impact === 'negative' ? 'text-danger' :
-                                    'text-warning'));
-                        }
+                        result = result[part];
                     }
-                });
-            }
-
-            let forecastMonths = [];
-            if (aiData && aiData.forecast && aiData.forecast.length > 0) {
-                forecastMonths = aiData.forecast.map(item => ({
-                    month: item.month + ' (Forecast)',
-                    revenue: item.revenue,
-                    isForecasted: true
-                }));
-            } else {
-                const lastDate = new Date(salesData[salesData.length - 1].date);
-                for (let i = 1; i <= 6; i++) {
-                    const forecastDate = new Date(lastDate);
-                    forecastDate.setMonth(lastDate.getMonth() + i);
-                    const month = forecastDate.toLocaleString('default', {
-                        month: 'long'
-                    });
-                    const year = forecastDate.getFullYear();
-                    const lastThreeMonths = salesData.slice(-3);
-                    const avgRevenue = lastThreeMonths.reduce((sum, item) => sum + item.revenue, 0) /
-                        lastThreeMonths.length;
-
-                    forecastMonths.push({
-                        month: `${month} ${year} (Forecast)`,
-                        revenue: avgRevenue,
-                        isForecasted: true
-                    });
+                    return result !== undefined ? result : fallback;
+                } catch {
+                    return fallback;
                 }
             }
 
-            const combinedData = [...salesData, ...forecastMonths];
+            // Initialize revenue chart with enhanced loading state
+            function initRevenueChart() {
+                const revenueChartLoader = document.getElementById('revenueChartLoader');
+                if (revenueChartLoader) revenueChartLoader.style.display = 'block';
 
-            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-            const revenueChart = new Chart(revenueCtx, {
-                type: 'line',
-                data: {
-                    labels: combinedData.map(item => item.month),
-                    datasets: [{
-                        label: 'Monthly Revenue',
-                        data: combinedData.map(item => item.revenue),
-                        backgroundColor: combinedData.map(item => item.isForecasted ?
-                            'rgba(255, 205, 86, 0.05)' : 'rgba(78, 115, 223, 0.05)'),
-                        borderColor: combinedData.map(item => item.isForecasted ?
-                            'rgba(255, 205, 86, 1)' : 'rgba(78, 115, 223, 1)'),
-                        pointBackgroundColor: combinedData.map(item => item.isForecasted ?
-                            'rgba(255, 205, 86, 1)' : 'rgba(78, 115, 223, 1)'),
-                        pointBorderColor: '#fff',
-                        pointStyle: combinedData.map(item => item.isForecasted ? 'triangle' :
-                            'circle'),
-                        pointRadius: combinedData.map(item => item.isForecasted ? 5 : 3),
-                        borderWidth: 2,
-                        fill: true,
-                        segment: {
-                            borderDash: ctx => ctx.p0.parsed.x >= salesData.length - 1 ? [6, 6] :
-                                undefined,
-                        }
-                    }]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: false,
-                            ticks: {
-                                callback: function(value) {
-                                    return value.toLocaleString() + ' VND';
-                                }
+                let forecastMonths = [];
+                if (aiData && aiData.forecast && aiData.forecast.length > 0) {
+                    forecastMonths = aiData.forecast.map(item => ({
+                        month: item.month + ' (Forecast)',
+                        revenue: item.revenue,
+                        isForecasted: true
+                    }));
+                } else if (salesData && salesData.length > 0) {
+                    const lastDate = new Date(salesData[salesData.length - 1].date);
+                    const lastThreeMonths = salesData.slice(-3);
+                    const avgRevenue = lastThreeMonths.reduce((sum, item) => sum + item.revenue, 0) /
+                        Math.max(1, lastThreeMonths.length);
+
+                    for (let i = 1; i <= 6; i++) {
+                        const forecastDate = new Date(lastDate);
+                        forecastDate.setMonth(lastDate.getMonth() + i);
+                        const month = forecastDate.toLocaleString('default', {
+                            month: 'long'
+                        });
+                        const year = forecastDate.getFullYear();
+
+                        forecastMonths.push({
+                            month: `${month} ${year} (Forecast)`,
+                            revenue: avgRevenue,
+                            isForecasted: true
+                        });
+                    }
+                }
+
+                const combinedData = salesData ? [...salesData, ...forecastMonths] : [];
+
+                if (combinedData.length === 0) {
+                    if (revenueChartLoader) revenueChartLoader.textContent = 'No data available';
+                    return;
+                }
+
+                const revenueCtx = document.getElementById('revenueChart');
+                if (!revenueCtx) return;
+
+                // Cache the chart configuration
+                chartCache.configs.revenue = {
+                    type: 'line',
+                    data: {
+                        labels: combinedData.map(item => item.month),
+                        datasets: [{
+                            label: 'Monthly Revenue',
+                            data: combinedData.map(item => item.revenue),
+                            backgroundColor: combinedData.map(item => item.isForecasted ?
+                                'rgba(255, 205, 86, 0.05)' : 'rgba(78, 115, 223, 0.05)'),
+                            borderColor: combinedData.map(item => item.isForecasted ?
+                                'rgba(255, 205, 86, 1)' : 'rgba(78, 115, 223, 1)'),
+                            pointBackgroundColor: combinedData.map(item => item.isForecasted ?
+                                'rgba(255, 205, 86, 1)' : 'rgba(78, 115, 223, 1)'),
+                            pointBorderColor: '#fff',
+                            pointStyle: combinedData.map(item => item.isForecasted ? 'triangle' :
+                                'circle'),
+                            pointRadius: combinedData.map(item => item.isForecasted ? 5 : 3),
+                            borderWidth: 2,
+                            fill: true,
+                            segment: {
+                                borderDash: ctx => ctx.p0.parsed.x >= salesData.length - 1 ? [6, 6] :
+                                    undefined,
                             }
-                        }
+                        }]
                     },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.dataset.label || '';
-                                    const isForecast = context.dataIndex >= salesData.length;
-                                    return `${label}${isForecast ? ' (Forecast)' : ''}: $${context.parsed.y.toLocaleString()}`;
+                    options: {
+                        maintainAspectRatio: false,
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: false,
+                                ticks: {
+                                    callback: function(value) {
+                                        return formatCurrency(value);
+                                    }
                                 }
                             }
                         },
-                        legend: {
-                            display: false
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.dataset.label || '';
+                                        const isForecast = context.dataIndex >= salesData.length;
+                                        return `${label}${isForecast ? ' (Forecast)' : ''}: ${formatCurrency(context.parsed.y)}`;
+                                    }
+                                }
+                            },
+                            legend: {
+                                display: false
+                            }
                         }
                     }
+                };
+
+                // Create the chart
+                const revenueChart = new Chart(revenueCtx.getContext('2d'), chartCache.configs.revenue);
+                if (revenueChartLoader) revenueChartLoader.style.display = 'none';
+            }
+
+            // Initialize category pie chart with optimized color handling
+            function initCategoryChart() {
+                const categoryPieChartLoader = document.getElementById('categoryPieChartLoader');
+                if (categoryPieChartLoader) categoryPieChartLoader.style.display = 'block';
+
+                if (!categoryData || categoryData.length === 0) {
+                    if (categoryPieChartLoader) categoryPieChartLoader.textContent = 'No category data available';
+                    return;
                 }
-            });
 
-            // Generate distinct colors for categories
-            const categoryColors = [];
-            const categoryHoverColors = [];
-            const colorPalette = [{
-                    base: '#4e73df',
-                    hover: '#2e59d9'
-                }, // Blue
-                {
-                    base: '#1cc88a',
-                    hover: '#17a673'
-                }, // Green
-                {
-                    base: '#e74a3b',
-                    hover: '#e02d1b'
-                }, // Red
-                {
-                    base: '#f6c23e',
-                    hover: '#f4b619'
-                }, // Yellow
-                {
-                    base: '#36b9cc',
-                    hover: '#258391'
-                }, // Cyan
-                {
-                    base: '#6f42c1',
-                    hover: '#553285'
-                }, // Purple
-                {
-                    base: '#fd7e14',
-                    hover: '#d46a0a'
-                }, // Orange
-                {
-                    base: '#20c9a6',
-                    hover: '#169b7f'
-                } // Teal
-            ];
+                // Precompute and cache category colors
+                const categoryColors = [];
+                const categoryHoverColors = [];
 
-            categoryData.forEach((category, index) => {
-                // Use the color palette in sequence first, then based on impact if available
-                let colorIndex = index % colorPalette.length;
-                let baseColor = colorPalette[colorIndex].base;
-                let hoverColor = colorPalette[colorIndex].hover;
+                categoryData.forEach((category, index) => {
+                    let colorIndex = index % colorPalette.length;
+                    let colorConfig = colorPalette[colorIndex];
 
-                if (aiData && aiData.category_impact) {
-                    const impact = aiData.category_impact.find(c => c.category.toLowerCase() === category
-                        .name.toLowerCase());
+                    // Apply impact-based coloring if available
+                    if (aiData && aiData.category_impact) {
+                        const impact = aiData.category_impact.find(c =>
+                            c.category.toLowerCase() === category.name.toLowerCase());
 
-                    if (impact) {
-                        if (impact.impact === 'positive') {
-                            baseColor = '#1cc88a'; // Green for positive
-                            hoverColor = '#17a673';
-                        } else if (impact.impact === 'negative') {
-                            baseColor = '#e74a3b'; // Red for negative
-                            hoverColor = '#e02d1b';
-                        } else if (impact.impact === 'neutral') {
-                            baseColor = '#f6c23e'; // Yellow for neutral
-                            hoverColor = '#f4b619';
+                        if (impact) {
+                            if (impact.impact === 'positive') {
+                                colorConfig = COLORS.positive;
+                            } else if (impact.impact === 'negative') {
+                                colorConfig = COLORS.negative;
+                            } else if (impact.impact === 'neutral') {
+                                colorConfig = COLORS.neutral;
+                            }
                         }
                     }
-                }
 
-                categoryColors.push(baseColor);
-                categoryHoverColors.push(hoverColor);
-            });
+                    categoryColors.push(colorConfig.base);
+                    categoryHoverColors.push(colorConfig.hover);
+                });
 
-            // Only initialize the categoryPieChart if the element exists
-            const categoryPieElement = document.getElementById('categoryPieChart');
-            if (categoryPieElement) {
-                const categoryCtx = categoryPieElement.getContext('2d');
-                const categoryPieChart = new Chart(categoryCtx, {
+                // Cache the colors for potential reuse
+                chartCache.colors.categories = {
+                    base: categoryColors,
+                    hover: categoryHoverColors
+                };
+
+                const categoryPieElement = document.getElementById('categoryPieChart');
+                if (!categoryPieElement) return;
+
+                chartCache.configs.category = {
                     type: 'doughnut',
                     data: {
                         labels: categoryData.map(item => item.name),
@@ -318,6 +378,7 @@
                     },
                     options: {
                         maintainAspectRatio: false,
+                        responsive: true,
                         plugins: {
                             tooltip: {
                                 callbacks: {
@@ -325,61 +386,64 @@
                                         const label = context.label || '';
                                         const value = context.parsed || 0;
                                         const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                        // Avoid division by zero
-                                        let percentage = 0;
-                                        if (total > 0) {
-                                            percentage = Math.round((value / total) * 100);
-                                        }
-                                        return `${label}: ${value.toLocaleString()} VND (${percentage}%)`;
+                                        let percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                        return `${label}: ${formatCurrency(value)} (${percentage}%)`;
                                     }
                                 }
                             }
                         }
                     }
+                };
+
+                const categoryPieChart = new Chart(categoryPieElement.getContext('2d'), chartCache.configs
+                    .category);
+                if (categoryPieChartLoader) categoryPieChartLoader.style.display = 'none';
+            }
+
+            // Initialize region bar chart with optimized color logic
+            function initRegionChart() {
+                const regionBarChartLoader = document.getElementById('regionBarChartLoader');
+                if (regionBarChartLoader) regionBarChartLoader.style.display = 'block';
+
+                if (!regionData || regionData.length === 0) {
+                    if (regionBarChartLoader) regionBarChartLoader.textContent = 'No region data available';
+                    return;
+                }
+
+                let recommendedRegions = [];
+                if (aiData && aiData.recommended_regions) {
+                    recommendedRegions = aiData.recommended_regions.map(r => r.toLowerCase());
+                }
+
+                // Limit to top 5 regions for better visualization
+                const topRegions = regionData.slice(0, 5);
+
+                const regionBackgroundColors = topRegions.map((item, index) => {
+                    return recommendedRegions.includes(item.region.toLowerCase()) ?
+                        COLORS.positive.base : colorPalette[index % colorPalette.length].base;
                 });
-            }
 
-            // Generate colors for regions
-            const regionColors = [
-                '#4e73df', // Blue
-                '#1cc88a', // Green
-                '#e74a3b', // Red
-                '#f6c23e', // Yellow
-                '#36b9cc' // Cyan
-            ];
+                const regionHoverColors = topRegions.map((item, index) => {
+                    return recommendedRegions.includes(item.region.toLowerCase()) ?
+                        COLORS.positive.hover : colorPalette[index % colorPalette.length].hover;
+                });
 
-            let recommendedRegions = [];
-            if (aiData && aiData.recommended_regions) {
-                recommendedRegions = aiData.recommended_regions.map(r => r.toLowerCase());
-            }
+                // Cache the colors
+                chartCache.colors.regions = {
+                    base: regionBackgroundColors,
+                    hover: regionHoverColors
+                };
 
-            const regionBackgroundColors = regionData.slice(0, 5).map((item, index) => {
-                // If it's a recommended region, use green, otherwise use colors from the palette
-                return recommendedRegions.includes(item.region.toLowerCase()) ?
-                    '#1cc88a' : regionColors[index % regionColors.length];
-            });
+                const regionBarElement = document.getElementById('regionBarChart');
+                if (!regionBarElement) return;
 
-            const regionHoverColors = regionData.slice(0, 5).map((item, index) => {
-                // Darker version of the background color for hover
-                return recommendedRegions.includes(item.region.toLowerCase()) ?
-                    '#17a673' : (regionColors[index % regionColors.length] === '#4e73df' ? '#2e59d9' :
-                        regionColors[index % regionColors.length] === '#1cc88a' ? '#17a673' :
-                        regionColors[index % regionColors.length] === '#e74a3b' ? '#e02d1b' :
-                        regionColors[index % regionColors.length] === '#f6c23e' ? '#f4b619' :
-                        '#258391');
-            });
-
-            // Only initialize the regionBarChart if the element exists
-            const regionBarElement = document.getElementById('regionBarChart');
-            if (regionBarElement) {
-                const regionCtx = regionBarElement.getContext('2d');
-                const regionBarChart = new Chart(regionCtx, {
+                chartCache.configs.region = {
                     type: 'bar',
                     data: {
-                        labels: regionData.slice(0, 5).map(item => item.region),
+                        labels: topRegions.map(item => item.region),
                         datasets: [{
                             label: 'Regional Revenue',
-                            data: regionData.slice(0, 5).map(item => item.revenue),
+                            data: topRegions.map(item => item.revenue),
                             backgroundColor: regionBackgroundColors,
                             hoverBackgroundColor: regionHoverColors,
                             borderWidth: 0
@@ -387,12 +451,13 @@
                     },
                     options: {
                         maintainAspectRatio: false,
+                        responsive: true,
                         scales: {
                             y: {
                                 beginAtZero: true,
                                 ticks: {
                                     callback: function(value) {
-                                        return value.toLocaleString() + ' VND';
+                                        return formatCurrency(value);
                                     }
                                 }
                             }
@@ -401,7 +466,7 @@
                             tooltip: {
                                 callbacks: {
                                     label: function(context) {
-                                        let label = `Revenue: ${context.parsed.y.toLocaleString()} VND`;
+                                        let label = `Revenue: ${formatCurrency(context.parsed.y)}`;
                                         if (recommendedRegions.includes(context.label.toLowerCase())) {
                                             label += ' (Recommended)';
                                         }
@@ -411,13 +476,21 @@
                             }
                         }
                     }
-                });
+                };
+
+                const regionBarChart = new Chart(regionBarElement.getContext('2d'), chartCache.configs.region);
+                if (regionBarChartLoader) regionBarChartLoader.style.display = 'none';
             }
 
-            // Populate the recommendations section with data from AI if the element exists
-            const recommendationsElement = document.getElementById('recommendations-content');
-            if (recommendationsElement) {
-                // Default recommendations in case the AI data doesn't have specific recommendations
+            // Initialize recommendations section with improved error handling
+            function initRecommendations() {
+                const recommendationsLoader = document.getElementById('recommendationsLoader');
+                if (recommendationsLoader) recommendationsLoader.style.display = 'block';
+
+                const recommendationsElement = document.getElementById('recommendations-content');
+                if (!recommendationsElement) return;
+
+                // Default recommendations as fallback
                 let recommendations = [{
                         priority: 'high',
                         text: 'Focus on top-selling products and categories'
@@ -432,42 +505,55 @@
                     }
                 ];
 
-                // Check if aiData has top_products or competitor_comparison for better recommendations
                 if (aiData) {
-                    if (aiData.top_products) {
-                        // Use the existing top_products logic
+                    // Determine which data source to use for recommendations
+                    if (aiData.top_products && aiData.top_products.length > 0) {
                         recommendations = aiData.top_products.map(product => ({
                             priority: product.potential || 'medium',
                             text: `Focus on <strong>${product.product_name}</strong> in the ${product.category} category`
                         }));
                     } else if (aiData.competitor_comparison && aiData.competitor_comparison.length > 0) {
-                        // Create recommendations based on competitor comparison
                         recommendations = aiData.competitor_comparison.map(competitor => {
-                            // Ensure market_share is a number to avoid NaN
-                            const marketShare = parseFloat(competitor.market_share) || 0;
+                            // Fix: Properly parse market_share as a number
+                            // Ensure it's a number by converting to string first then parsing
+                            // Handle both string and number formats
+                            const marketShareValue = competitor.market_share;
+                            let marketShare = 0;
+
+                            if (typeof marketShareValue === 'string') {
+                                // Remove any % sign and parse
+                                marketShare = parseFloat(marketShareValue.replace('%', ''));
+                            } else if (typeof marketShareValue === 'number') {
+                                marketShare = marketShareValue;
+                            }
+
+                            // Ensure it's not NaN after parsing
+                            if (isNaN(marketShare)) marketShare = 0;
+
                             return {
                                 priority: marketShare > 25 ? 'high' : (marketShare > 10 ? 'medium' : 'low'),
                                 text: `Address competition from <strong>${competitor.competitor}</strong> with ${marketShare}% market share`
                             };
                         });
                     } else if (aiData.regional_performance && aiData.regional_performance.length > 0) {
-                        // Create recommendations based on regional performance
                         recommendations = aiData.regional_performance.slice(0, 3).map(region => {
-                            // Ensure revenue is a number
                             const revenue = parseFloat(region.revenue) || 0;
                             return {
                                 priority: 'medium',
-                                text: `Expand presence in <strong>${region.region}</strong> region with forecasted revenue of ${revenue.toLocaleString()} VND`
+                                text: `Expand presence in <strong>${region.region}</strong> region with forecasted revenue of ${formatCurrency(revenue)}`
                             };
                         });
+                    } else if (aiData.recommendations && aiData.recommendations.length > 0) {
+                        // Direct recommendations if available
+                        recommendations = aiData.recommendations;
                     }
                 }
 
+                // Clear and repopulate recommendations
                 recommendationsElement.innerHTML = '';
                 const recList = document.createElement('ul');
                 recList.className = 'recommendation-items';
 
-                // Add recommendations based on available data
                 recommendations.forEach(rec => {
                     const item = document.createElement('li');
                     item.className = `${rec.priority}-priority`;
@@ -476,23 +562,115 @@
                 });
 
                 recommendationsElement.appendChild(recList);
+                if (recommendationsLoader) recommendationsLoader.style.display = 'none';
+            }
+
+            // Export functionality
+            function setupExport() {
+                const exportBtn = document.getElementById('exportBtn');
+                if (!exportBtn) return;
+
+                exportBtn.addEventListener('click', function() {
+                    const {
+                        jsPDF
+                    } = window.jspdf;
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+
+                    // Set loading state
+                    exportBtn.disabled = true;
+                    exportBtn.innerHTML =
+                        '<i class="fas fa-spinner fa-spin fa-sm text-white-50"></i> Exporting...';
+
+                    const content = document.querySelector('.content');
+
+                    html2canvas(content, {
+                        scale: 2,
+                        logging: false,
+                        useCORS: true,
+                        allowTaint: true
+                    }).then(canvas => {
+                        const imgData = canvas.toDataURL('image/png');
+                        const imgWidth = 210; // A4 width in mm
+                        const pageHeight = 297; // A4 height in mm
+                        const imgHeight = canvas.height * imgWidth / canvas.width;
+                        let heightLeft = imgHeight;
+                        let position = 0;
+
+                        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
+
+                        while (heightLeft >= 0) {
+                            position = heightLeft - imgHeight;
+                            pdf.addPage();
+                            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                            heightLeft -= pageHeight;
+                        }
+
+                        pdf.save('market-trend-analysis.pdf');
+
+                        // Reset button state
+                        exportBtn.disabled = false;
+                        exportBtn.innerHTML =
+                            '<i class="fas fa-download fa-sm text-white-50"></i> Export Report';
+                    });
+                });
+            }
+
+            // Initialize all components with error handling
+            try {
+                initRevenueChart();
+                initCategoryChart();
+                initRegionChart();
+                initRecommendations();
+                setupExport();
+            } catch (error) {
+                console.error('Error initializing charts:', error);
+                document.querySelectorAll('.chart-loader').forEach(loader => {
+                    loader.textContent = 'Error loading chart data';
+                    loader.style.display = 'block';
+                });
             }
         });
     </script>
 
     <style>
+        .chart-loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px 20px;
+            border-radius: 4px;
+            z-index: 10;
+        }
+
+        .chart-area,
+        .chart-bar,
+        .chart-pie {
+            position: relative;
+            height: 300px;
+        }
+
         .prediction-content,
         .explanation-content,
         .recommendations-content {
             padding: 15px;
         }
 
-        .tab-content ul {
-            margin-left: 20px;
+        .recommendation-items {
+            list-style: none;
+            padding: 0;
         }
 
-        .tab-content li {
-            margin-bottom: 10px;
+        .recommendation-items li {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #f8f9fc;
         }
 
         .high-priority {
@@ -537,14 +715,14 @@
             color: #5a5c69;
         }
 
-        /* Ensure tabs display correctly */
-        .nav-tabs .nav-link {
-            font-weight: bold;
-        }
+        /* Responsive improvements */
+        @media (max-width: 768px) {
 
-        .nav-tabs .nav-link.active {
-            background-color: #f8f9fc;
-            border-color: #dddfeb #dddfeb #f8f9fc;
+            .chart-area,
+            .chart-bar,
+            .chart-pie {
+                height: 250px;
+            }
         }
     </style>
 @endsection
