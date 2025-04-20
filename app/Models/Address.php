@@ -39,7 +39,7 @@ class Address extends Model
 
     public function ward()
     {
-        return $this->belongsTo(Ward::class, 'ward');
+        return $this->belongsTo(Ward::class);
     }
     // Getter để lấy tên thay vì ID
     public function getCityNameAttribute()
