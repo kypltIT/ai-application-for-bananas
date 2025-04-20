@@ -12,28 +12,28 @@ Features:
     <div class="page-wrapper">
         <div class="content">
             <div class="container-fluid px-4">
-                <h1 class="mt-4">Thống kê lợi nhuận</h1>
+                <h1 class="mt-4">Profit Statistics</h1>
 
                 <div class="card mb-4">
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label>Từ ngày:</label>
+                                    <label>From Date:</label>
                                     <input type="date" class="form-control" id="start_date">
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label>Đến ngày:</label>
+                                    <label>To Date:</label>
                                     <input type="date" class="form-control" id="end_date">
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label>Danh mục:</label>
+                                    <label>Category:</label>
                                     <select class="form-control" id="category">
-                                        <option value="">Tất cả danh mục</option>
+                                        <option value="">All Categories</option>
                                         @foreach ($categories as $category)
                                             <option value="{{ $category->id }}">{{ $category->name }}</option>
                                         @endforeach
@@ -43,7 +43,7 @@ Features:
                         </div>
                         <div class="row mt-3">
                             <div class="col-12">
-                                <button class="btn btn-primary" onclick="fetchStatistics()">Lọc dữ liệu</button>
+                                <button class="btn btn-primary" onclick="fetchStatistics()">Filter Data</button>
                             </div>
                         </div>
                     </div>
@@ -53,7 +53,7 @@ Features:
                     <div class="col-xl-3 col-md-6">
                         <div class="card bg-primary text-white mb-4">
                             <div class="card-body">
-                                Tổng doanh thu
+                                Total Revenue
                                 <h4 id="total-revenue">0 đ</h4>
                             </div>
                         </div>
@@ -61,13 +61,13 @@ Features:
                     <div class="col-xl-3 col-md-6">
                         <div class="card bg-success text-white mb-4">
                             <div class="card-body">
-                                <h5 class="mb-3">Tổng đơn hàng theo danh mục</h5>
+                                <h5 class="mb-3">Total Orders by Category</h5>
                                 <div id="orders-by-category-list">
-                                    <!-- Sẽ được điền bởi JavaScript -->
+                                    <!-- Will be populated by JavaScript -->
                                 </div>
                                 <hr class="border-light">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span>Tổng cộng:</span>
+                                    <span>Total:</span>
                                     <h4 id="total-orders" class="mb-0">0</h4>
                                 </div>
                             </div>
@@ -76,7 +76,7 @@ Features:
                     <div class="col-xl-3 col-md-6">
                         <div class="card bg-warning text-white mb-4">
                             <div class="card-body">
-                                Doanh thu trung bình/đơn
+                                Average Revenue per Order
                                 <h4 id="average-revenue">0 đ</h4>
                             </div>
                         </div>
@@ -88,7 +88,7 @@ Features:
                         <div class="card mb-4">
                             <div class="card-header">
                                 <i class="fas fa-chart-bar me-1"></i>
-                                Doanh thu theo danh mục
+                                Revenue by Category
                             </div>
                             <div class="card-body">
                                 <canvas id="revenueByCategoryChart"></canvas>
@@ -99,7 +99,7 @@ Features:
                         <div class="card mb-4">
                             <div class="card-header">
                                 <i class="fas fa-chart-bar me-1"></i>
-                                Số đơn hàng theo danh mục
+                                Orders by Category
                             </div>
                             <div class="card-body">
                                 <canvas id="ordersByCategoryChart"></canvas>
@@ -113,7 +113,7 @@ Features:
                         <div class="card mb-4">
                             <div class="card-header">
                                 <i class="fas fa-chart-line me-1"></i>
-                                Doanh thu theo tháng
+                                Revenue by Month
                             </div>
                             <div class="card-body">
                                 <canvas id="revenueByMonthChart"></canvas>
@@ -171,7 +171,7 @@ Features:
                         data: {
                             labels: Object.keys(data.revenue_by_category),
                             datasets: [{
-                                label: 'Doanh thu theo danh mục',
+                                label: 'Revenue by Category',
                                 data: Object.values(data.revenue_by_category),
                                 backgroundColor: 'rgba(54, 162, 235, 0.5)'
                             }]
@@ -191,7 +191,7 @@ Features:
                                 tooltip: {
                                     callbacks: {
                                         label: function(context) {
-                                            return 'Doanh thu: ' + formatCurrency(context.raw);
+                                            return 'Revenue: ' + formatCurrency(context.raw);
                                         }
                                     }
                                 }
@@ -207,7 +207,7 @@ Features:
                         data: {
                             labels: Object.keys(data.orders_by_category),
                             datasets: [{
-                                label: 'Số đơn hàng theo danh mục',
+                                label: 'Orders by Category',
                                 data: Object.values(data.orders_by_category),
                                 backgroundColor: 'rgba(75, 192, 192, 0.5)'
                             }]
@@ -225,7 +225,7 @@ Features:
                                 tooltip: {
                                     callbacks: {
                                         label: function(context) {
-                                            return 'Số đơn hàng: ' + context.raw;
+                                            return 'Orders: ' + context.raw;
                                         }
                                     }
                                 }
@@ -241,7 +241,7 @@ Features:
                         data: {
                             labels: Object.keys(data.revenue_by_month),
                             datasets: [{
-                                label: 'Doanh thu theo tháng',
+                                label: 'Revenue by Month',
                                 data: Object.values(data.revenue_by_month),
                                 borderColor: 'rgba(75, 192, 192, 1)',
                                 tension: 0.1
@@ -262,7 +262,7 @@ Features:
                                 tooltip: {
                                     callbacks: {
                                         label: function(context) {
-                                            return 'Doanh thu: ' + formatCurrency(context.raw);
+                                            return 'Revenue: ' + formatCurrency(context.raw);
                                         }
                                     }
                                 }
@@ -272,9 +272,9 @@ Features:
                 }
 
                 function formatCurrency(amount) {
-                    return new Intl.NumberFormat('vi-VN', {
+                    return new Intl.NumberFormat('en-US', {
                         style: 'currency',
-                        currency: 'VND'
+                        currency: 'USD'
                     }).format(amount);
                 }
 

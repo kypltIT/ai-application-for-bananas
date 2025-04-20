@@ -46,7 +46,6 @@ class TrendAnalysisController extends Controller
     public function analyze(Request $request)
     {
         $validated = $request->validate([
-            'fashion_trend' => 'required|string|max:500',
             'forecast_period' => 'required|integer|min:3|max:12',
         ]);
 
@@ -68,7 +67,6 @@ class TrendAnalysisController extends Controller
             'market_trends' => $marketTrends,
             'customer_behavior' => $customerBehavior,
             'marketing_campaigns' => $marketingCampaigns,
-            'trend' => $validated['fashion_trend'],
             'forecast_period' => $validated['forecast_period'],
         ];
 
@@ -428,12 +426,12 @@ class TrendAnalysisController extends Controller
             'campaign_performance' => [
                 'summer_sale' => [
                     'conversion_rate' => 0.12,
-                    'average_order_value' => 150,
+                    'average_order_value' => 500000,
                     'customer_acquisition' => 1200
                 ],
                 'back_to_school' => [
                     'conversion_rate' => 0.08,
-                    'average_order_value' => 180,
+                    'average_order_value' => 500000,
                     'customer_acquisition' => 800
                 ]
             ]

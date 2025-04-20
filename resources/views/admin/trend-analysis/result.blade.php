@@ -2,7 +2,6 @@
 {{-- Updated view to align with the latest controller logic and data handling --}}
 {{-- Enhanced layout and design for better user experience --}}
 {{-- Added export, compare, share, and alert features for improved functionality --}}
-{{-- Added sections for external data sources including market trends, customer behavior, and marketing campaigns --}}
 
 @extends('layouts.admin.app')
 
@@ -43,106 +42,6 @@
                         </div>
                     </div>
                 @endif
-
-                <!-- External Data Sources Section -->
-                <div class="row mb-4">
-                    <!-- Market Trends -->
-                    <div class="col-md-4">
-                        <div class="card shadow">
-                            <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">Market Trends</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-bordered">
-                                        <thead>
-                                            <tr>
-                                                <th>Trend</th>
-                                                <th>Score</th>
-                                                <th>Growth</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($marketTrends as $trend => $data)
-                                                <tr>
-                                                    <td>{{ ucwords(str_replace('_', ' ', $trend)) }}</td>
-                                                    <td>{{ number_format($data['trend_score'] * 100, 1) }}%</td>
-                                                    <td>{{ number_format($data['growth_rate'] * 100, 1) }}%</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Customer Behavior -->
-                    <div class="col-md-4">
-                        <div class="card shadow">
-                            <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">Customer Behavior</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <h6 class="font-weight-bold">Preferences</h6>
-                                    <ul class="list-unstyled">
-                                        @foreach ($customerBehavior['preferences'] as $pref => $value)
-                                            <li>{{ ucwords(str_replace('_', ' ', $pref)) }}:
-                                                {{ number_format($value * 100, 1) }}%</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                                <div class="mb-3">
-                                    <h6 class="font-weight-bold">Purchase Patterns</h6>
-                                    <ul class="list-unstyled">
-                                        <li>Online vs Store:
-                                            {{ number_format($customerBehavior['purchase_patterns']['online_vs_store']['online'] * 100, 1) }}%
-                                            online</li>
-                                        <li>Average Basket Size:
-                                            {{ $customerBehavior['purchase_patterns']['average_basket_size'] }} items</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Marketing Campaigns -->
-                    <div class="col-md-4">
-                        <div class="card shadow">
-                            <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">Marketing Campaigns</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <h6 class="font-weight-bold">Active Campaigns</h6>
-                                    <ul class="list-unstyled">
-                                        @foreach ($marketingCampaigns['active_campaigns'] as $campaign => $data)
-                                            <li>
-                                                <strong>{{ ucwords(str_replace('_', ' ', $campaign)) }}</strong><br>
-                                                {{ date('M d', strtotime($data['start_date'])) }} -
-                                                {{ date('M d', strtotime($data['end_date'])) }}<br>
-                                                {{ number_format($data['discount_rate'] * 100, 0) }}% discount
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                                <div>
-                                    <h6 class="font-weight-bold">Performance</h6>
-                                    <ul class="list-unstyled">
-                                        @foreach ($marketingCampaigns['campaign_performance'] as $campaign => $data)
-                                            <li>
-                                                <strong>{{ ucwords(str_replace('_', ' ', $campaign)) }}</strong><br>
-                                                Conversion: {{ number_format($data['conversion_rate'] * 100, 1) }}%<br>
-                                                Avg. Order: ${{ number_format($data['average_order_value'], 2) }}
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 <div class="row mb-4">
                     <div class="col">

@@ -10,7 +10,7 @@ class DiagnosticService
 {
     protected $apiKey;
     protected $apiUrl = 'https://api.openai.com/v1/chat/completions';
-    protected $model = 'gpt-4o';
+    protected $model = 'gpt-4.1';
 
     public function __construct()
     {
