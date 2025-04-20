@@ -164,9 +164,6 @@
 
                                 </table>
                             </div>
-                            <ul class="pagination ">
-                                {!! $orders->links() !!}
-                            </ul>
                         </div>
                     </div>
                 </div>

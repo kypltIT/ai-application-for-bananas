@@ -37,7 +37,7 @@ class OrderController extends Controller
             $query->whereDate('created_at', '<=', $request->end_date);
         }
 
-        $orders = $query->paginate(10); // Use paginate() instead of get()
+        $orders = $query->get();
         return view('admin.orders.index', compact('orders'));
     }
 
