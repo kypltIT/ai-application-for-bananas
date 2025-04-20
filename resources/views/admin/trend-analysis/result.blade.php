@@ -1,20 +1,3 @@
-{{-- resources/views/admin/trend-analysis/result.blade.php --}}
-{{-- Updated view to align with the latest controller logic and data handling --}}
-{{-- Enhanced layout and design for better user experience --}}
-{{-- Added export, compare, share, and alert features for improved functionality --}}
-{{-- Fixed regionBarChart initialization by removing references to non-existent elements --}}
-{{-- Modified recommendations section to display content from analysis rather than relying on top_products data --}}
-{{-- Improved color coding for Regional Performance and Category Performance charts --}}
-{{-- Fixed NaN% issue in category chart tooltips by adding null checks for calculations --}}
-{{-- Optimized TrendAnalysis implementation with improved performance and user experience --}}
-{{-- Refactored JavaScript for better maintainability and error handling --}}
-{{-- Added data caching for chart configurations to improve rendering performance --}}
-{{-- Optimized color generation logic with precomputed maps for impact-based coloring --}}
-{{-- Improved chart rendering with lazy initialization and responsive design --}}
-{{-- Enhanced tooltips with more detailed information and better formatting --}}
-{{-- Added loading states for charts to improve perceived performance --}}
-{{-- Fixed issue with market share percentage always showing 0% by properly parsing string values --}}
-
 @extends('layouts.admin.app')
 
 @section('title', 'Market Trend Analysis Results')
@@ -138,50 +121,59 @@
 
             // Color configuration constants for better maintainability
             const COLORS = {
-                positive: {
-                    base: '#1cc88a',
-                    hover: '#17a673'
-                },
-                negative: {
-                    base: '#e74a3b',
-                    hover: '#e02d1b'
-                },
-                neutral: {
-                    base: '#f6c23e',
-                    hover: '#f4b619'
-                },
-                blue: {
-                    base: '#4e73df',
-                    hover: '#2e59d9'
-                },
-                cyan: {
-                    base: '#36b9cc',
-                    hover: '#258391'
-                },
-                purple: {
-                    base: '#6f42c1',
-                    hover: '#553285'
+                // Pride flag colors
+                red: {
+                    base: '#E40303',
+                    hover: '#BE0202'
                 },
                 orange: {
-                    base: '#fd7e14',
-                    hover: '#d46a0a'
+                    base: '#FF8C00',
+                    hover: '#E67E00'
                 },
-                teal: {
-                    base: '#20c9a6',
-                    hover: '#169b7f'
+                yellow: {
+                    base: '#FFED00',
+                    hover: '#E5D500'
+                },
+                green: {
+                    base: '#008026',
+                    hover: '#006B20'
+                },
+                blue: {
+                    base: '#004DFF',
+                    hover: '#0040D9'
+                },
+                indigo: {
+                    base: '#750787',
+                    hover: '#5D0669'
+                },
+                violet: {
+                    base: '#9C27B0',
+                    hover: '#7B1FA2'
+                },
+                // Keep some utility colors
+                positive: {
+                    base: '#008026', // Using green from pride flag
+                    hover: '#006B20'
+                },
+                negative: {
+                    base: '#E40303', // Using red from pride flag
+                    hover: '#BE0202'
+                },
+                neutral: {
+                    base: '#FFED00', // Using yellow from pride flag
+                    hover: '#E5D500'
                 }
             };
 
-            // Set up color palette for reuse
+            // Set up color palette for reuse with pride flag colors
             const colorPalette = [
-                COLORS.blue,
-                COLORS.positive,
-                COLORS.negative,
-                COLORS.neutral,
-                COLORS.cyan,
-                COLORS.purple,
+                COLORS.red,
                 COLORS.orange,
-                COLORS.teal
+                COLORS.yellow,
+                COLORS.green,
+                COLORS.blue,
+                COLORS.indigo,
+                COLORS.violet
             ];
 
             // Formatter function for currency
@@ -266,11 +258,11 @@
                             label: 'Monthly Revenue',
                             data: combinedData.map(item => item.revenue),
                             backgroundColor: combinedData.map(item => item.isForecasted ?
-                                'rgba(255, 205, 86, 0.05)' : 'rgba(78, 115, 223, 0.05)'),
+                                'rgba(255, 237, 0, 0.05)' : 'rgba(0, 77, 255, 0.05)'),
                             borderColor: combinedData.map(item => item.isForecasted ?
-                                'rgba(255, 205, 86, 1)' : 'rgba(78, 115, 223, 1)'),
+                                COLORS.yellow.base : COLORS.blue.base),
                             pointBackgroundColor: combinedData.map(item => item.isForecasted ?
-                                'rgba(255, 205, 86, 1)' : 'rgba(78, 115, 223, 1)'),
+                                COLORS.yellow.base : COLORS.blue.base),
                             pointBorderColor: '#fff',
                             pointStyle: combinedData.map(item => item.isForecasted ? 'triangle' :
                                 'circle'),
@@ -674,45 +666,54 @@
         }
 
         .high-priority {
-            border-left: 4px solid #e74a3b;
+            border-left: 4px solid #E40303;
+            /* Red from pride flag */
             padding-left: 10px;
         }
 
         .medium-priority {
-            border-left: 4px solid #f6c23e;
+            border-left: 4px solid #FFED00;
+            /* Yellow from pride flag */
             padding-left: 10px;
         }
 
         .low-priority {
-            border-left: 4px solid #1cc88a;
+            border-left: 4px solid #008026;
+            /* Green from pride flag */
             padding-left: 10px;
         }
 
         .highlight-term {
             font-weight: 600;
-            color: #4e73df;
+            color: #004DFF;
+            /* Blue from pride flag */
         }
 
         .badge-success {
-            background-color: #1cc88a;
+            background-color: #008026;
+            /* Green from pride flag */
         }
 
         .badge-warning {
-            background-color: #f6c23e;
+            background-color: #FFED00;
+            /* Yellow from pride flag */
         }
 
         .badge-info {
-            background-color: #36b9cc;
+            background-color: #004DFF;
+            /* Blue from pride flag */
         }
 
         .section-heading {
             margin-top: 20px;
-            color: #2e59d9;
+            color: #750787;
+            /* Indigo from pride flag */
         }
 
         .subsection-heading {
             margin-top: 15px;
-            color: #5a5c69;
+            color: #9C27B0;
+            /* Violet from pride flag */
         }
 
         /* Responsive improvements */
