@@ -52,6 +52,7 @@ Route::middleware(['auth', 'checkRole:admin'])->prefix('admin')->name('admin.')-
     // Fashion Trend Analysis routes
     Route::get('/trend-analysis', [TrendAnalysisController::class, 'index'])->name('trend-analysis.index');
     Route::post('/trend-analysis/analyze', [TrendAnalysisController::class, 'analyze'])->name('trend-analysis.analyze');
+    Route::get('/trend-analysis/result', [TrendAnalysisController::class, 'result'])->name('trend-analysis.result');
 
     Route::get('/statistics', [StatisticsController::class, 'index'])->name('statistics');
     Route::get('/statistics/data', [StatisticsController::class, 'getStatistics'])->name('statistics.data');

@@ -10,7 +10,7 @@ class DiagnosticService
 {
     protected $apiKey;
     protected $apiUrl = 'https://api.openai.com/v1/chat/completions';
-    protected $model = 'gpt-4.1';
+    protected $model = 'gpt-4o';
 
     public function __construct()
     {
@@ -35,7 +35,7 @@ class DiagnosticService
                 'messages' => [
                     [
                         'role' => 'system',
-                        'content' => 'You are a diagnostic system that analyzes data and provides insights, recommendations, and potential issues.'
+                        'content' => 'You must search on web. You are a diagnostic system that analyzes data and provides insights, recommendations, and potential issues.'
                     ],
                     [
                         'role' => 'user',
@@ -87,10 +87,9 @@ class DiagnosticService
         }
 
         $promptBase .= "Please provide:\n";
-        $promptBase .= "1. A summary of the key findings\n";
-        $promptBase .= "2. Potential issues or anomalies detected\n";
-        $promptBase .= "3. Recommendations for addressing any issues\n";
-        $promptBase .= "4. Any additional insights that might be valuable\n";
+        $promptBase .= "1. A JSON block with forecast, regional performance, and competitor comparison.\n";
+        $promptBase .= "2. Key findings with supporting data.\n";
+        $promptBase .= "3. Reasons for revenue changes (increase/decrease).\n";
 
         return $promptBase;
     }

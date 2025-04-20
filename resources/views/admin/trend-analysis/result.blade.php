@@ -71,64 +71,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="col-12">
-                        <div class="card shadow">
-                            <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">Recommendations Summary</h6>
-                            </div>
-                            <div class="card-body">
-                                @if (isset($analysis) && $analysis['success'])
-                                    <div class="recommendations-list">
-                                        <div id="recommendations-content">
-                                            <p class="text-center text-gray-500">Processing recommendations...</p>
-                                        </div>
-                                    </div>
-                                @else
-                                    <p class="text-center text-danger">Unable to generate recommendations. Please try again.
-                                    </p>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <div class="card shadow">
-                            <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">Detailed Category Data</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-bordered" width="100%" cellspacing="0">
-                                        <thead>
-                                            <tr>
-                                                <th>Category</th>
-                                                <th>Products</th>
-                                                <th>Units Sold</th>
-                                                <th>Revenue</th>
-                                                <th>Growth Potential</th>
-                                                <th>Trend Impact</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($categoryPerformance as $category)
-                                                <tr>
-                                                    <td>{{ $category->name }}</td>
-                                                    <td>{{ $category->product_count }}</td>
-                                                    <td>{{ $category->units_sold }}</td>
-                                                    <td>${{ number_format($category->revenue, 2) }}</td>
-                                                    <td id="growth-{{ $category->id }}">Analyzing...</td>
-                                                    <td id="impact-{{ $category->id }}">Analyzing...</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -241,7 +183,7 @@
                             beginAtZero: false,
                             ticks: {
                                 callback: function(value) {
-                                    return '$' + value.toLocaleString();
+                                    return  value.toLocaleString() + ' VND';
                                 }
                             }
                         }
@@ -355,7 +297,7 @@
                             beginAtZero: true,
                             ticks: {
                                 callback: function(value) {
-                                    return '$' + value.toLocaleString();
+                                    return value.toLocaleString() + ' VND';
                                 }
                             }
                         }
@@ -364,7 +306,7 @@
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    let label = `Revenue: $${context.parsed.y.toLocaleString()}`;
+                                    let label = `Revenue: ${context.parsed.y.toLocaleString()}VND`;
                                     if (recommendedRegions.includes(context.label.toLowerCase())) {
                                         label += ' (Recommended)';
                                     }

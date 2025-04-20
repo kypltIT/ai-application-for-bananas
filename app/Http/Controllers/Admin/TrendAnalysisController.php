@@ -16,6 +16,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class TrendAnalysisController extends Controller
 {
@@ -34,10 +35,10 @@ class TrendAnalysisController extends Controller
         // Get monthly sales data for the past 12 months for visualization
         $monthlySales = $this->getMonthlySalesData();
 
-        // Get product category performance data
-        $categoryPerformance = $this->getCategoryPerformanceData();
+        // Get revenue by region data
+        $revenueByRegion = $this->getRevenueByRegionData();
 
-        return view('admin.trend-analysis.index', compact('monthlySales', 'categoryPerformance'));
+        return view('admin.trend-analysis.index', compact('monthlySales', 'revenueByRegion'));
     }
 
     /**
@@ -49,120 +50,164 @@ class TrendAnalysisController extends Controller
             'forecast_period' => 'required|integer|min:3|max:12',
         ]);
 
+        // Store analysis data in session for the result page
+        session(['analysis_data' => [
+            'forecast_period' => $validated['forecast_period'],
+            'timestamp' => now(),
+        ]]);
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true]);
+        }
+
         // Get internal sales data
+        $totalSales = $this->getTotalSalesData();
         $monthlySales = $this->getMonthlySalesData();
         $categoryPerformance = $this->getCategoryPerformanceData();
         $revenueByRegion = $this->getRevenueByRegionData();
 
-        // Get external data
-        $marketTrends = $this->getMarketTrendsData();
-        $customerBehavior = $this->getCustomerBehaviorData();
-        $marketingCampaigns = $this->getMarketingCampaignsData();
-
         // Prepare data for AI analysis
         $analysisData = [
             'sales_data' => $monthlySales,
+            'total_sales' => $totalSales,
             'category_performance' => $categoryPerformance,
             'revenue_by_region' => $revenueByRegion,
-            'market_trends' => $marketTrends,
-            'customer_behavior' => $customerBehavior,
-            'marketing_campaigns' => $marketingCampaigns,
+            'competitor_data' => $this->getCompetitorData(),
             'forecast_period' => $validated['forecast_period'],
         ];
 
         // Get AI analysis
-        $prompt = "You are a senior market analysis expert for a fashion retail business with deep knowledge of retail operations and inventory management. Analyze the following sales data in relation to the described fashion trend, incorporating insights from external data sources.
+        $prompt = "You are a senior market analysis expert for a footwear retail business. Analyze the following data, considering internal sales, competitor performance (Nike, Adidas, Puma, Jordan, New Balance), and geographical/cultural factors.
 
-        IMPORTANT: Your response MUST begin with a valid JSON block containing chart data. Don't include any introductory text before the JSON. The JSON must be formatted exactly as in the following example, with no alterations to the structure:
+        IMPORTANT: Your response MUST begin with a valid JSON block containing chart data. The JSON must include:
+        - \"forecast\": Revenue predictions for the next {{forecast_period}} months.
+        - \"regional_performance\": Revenue predictions by region.
+        - \"competitor_comparison\": Insights comparing our performance with competitors.
 
-        ```json
-        {
-          \"forecast\": [
-            {\"month\": \"July 2023\", \"revenue\": 125000},
-            {\"month\": \"August 2023\", \"revenue\": 130000},
-            {\"month\": \"September 2023\", \"revenue\": 128000},
-            {\"month\": \"October 2023\", \"revenue\": 135000},
-            {\"month\": \"November 2023\", \"revenue\": 142000},
-            {\"month\": \"December 2023\", \"revenue\": 150000}
-          ],
-          \"category_impact\": [
-            {\"category\": \"Dresses\", \"growth_percentage\": 15, \"impact\": \"positive\"},
-            {\"category\": \"Shirts\", \"growth_percentage\": -5, \"impact\": \"negative\"},
-            {\"category\": \"Accessories\", \"growth_percentage\": 10, \"impact\": \"positive\"},
-            {\"category\": \"Pants\", \"growth_percentage\": 0, \"impact\": \"neutral\"}
-          ],
-          \"recommended_regions\": [\"New York\", \"Los Angeles\", \"Miami\"],
-          \"external_factors\": {
-            \"market_trends\": [\"sustainable_fashion\", \"digital_nomad_style\"],
-            \"customer_preferences\": [\"eco_friendly\", \"comfort_first\"],
-            \"campaign_impact\": [\"summer_sale\", \"back_to_school\"]
-          }
-        }
-        ```
+        After the JSON, provide:
+        1. Key findings with supporting data.
+        2. Reasons for revenue changes (increase/decrease).
+        3. Actionable recommendations to maximize revenue or mitigate losses.
 
-        The JSON data MUST contain the following properties:
-        - \"forecast\": An array of {{forecast_period}} objects with month and revenue predictions for the next {{forecast_period}} months.
-        - \"category_impact\": An array of objects for each product category, with growth_percentage and impact assessment.
-        - \"recommended_regions\": An array of strings with recommended regions to focus on.
-        - \"external_factors\": An object containing arrays of relevant market trends, customer preferences, and campaign impacts.
-
-        Use the actual category names from the provided data. Calculate realistic growth percentages based on the trend and external data.
-
-        Task: Identify potential best-selling products and categories for the near future, explaining the reasons behind their potential success. Additionally, provide strategic recommendations to mitigate revenue declines by adjusting inventory, shifting products, and leveraging promotional strategies.
-
-        Instructions:
-
-        Identify Trending Products and Categories: Analyze current market trends and consumer behaviors to predict products and categories that could become best-sellers in the near future. Consider:
-        - Emerging market trends from external sources
-        - Customer behavior patterns and preferences
-        - Impact of current and planned marketing campaigns
-        - Industry reports and fashion forecasts
-        - Social media trends and influencer impact
-
-        Provide Reasons for Their Success: Explain the factors driving demand for each identified category or product. Consider:
-        - Consumer interest shifts from external data
-        - Technological advancements and market gaps
-        - Marketing campaign effectiveness
-        - Regional preferences and cultural influences
-        - Seasonal and event-based opportunities
-
-        Strategic Recommendations to Reduce Revenue Decline:
-
-        Suggest strategies for mitigating revenue drops:
-
-        - Align inventory with market trends and customer preferences
-        - Optimize marketing campaigns based on customer behavior data
-        - Implement targeted promotions for underperforming categories
-        - Adjust product mix based on external market insights
-        - Leverage successful campaign elements across regions
-        - Monitor and respond to emerging market trends
-
-        Output Format: A list of identified best-selling products and categories with reasons for their potential success. A set of actionable recommendations for handling slow-moving products, inventory adjustments, and promotional strategies to prevent revenue drops. Format your response with clear section headings and bullet points for easy reading. Prioritize specific, measurable recommendations over general advice.";
+        Use the following structure:
+        - \"forecast\": [{\"month\": \"Month Year\", \"revenue\": Number}]
+        - \"regional_performance\": [{\"region\": \"Region Name\", \"revenue\": Number}]
+        - \"competitor_comparison\": [{\"competitor\": \"Name\", \"revenue\": Number, \"market_share\": Number}]
+        ";
 
         $analysis = $this->diagnosticService->runDiagnostic($analysisData, $prompt);
 
         // Process the analysis
         if (isset($analysis['success']) && $analysis['success'] && isset($analysis['analysis'])) {
-            // Extract chart data for JavaScript
             $chartData = $this->extractChartData($analysis['analysis']);
             if ($chartData) {
                 $analysis['chart_data'] = $chartData;
             }
-
-            // Remove JSON and format HTML content for display
             $analysis['formatted_content'] = $this->formatAnalysisContent($analysis['analysis']);
         }
 
-        // Return the view with all data
         return view('admin.trend-analysis.result', compact(
             'monthlySales',
             'categoryPerformance',
             'revenueByRegion',
-            'marketTrends',
-            'customerBehavior',
-            'marketingCampaigns',
             'analysis'
         ));
+    }
+
+    /**
+     * Display the analysis results
+     */
+    public function result()
+    {
+        $analysisData = session('analysis_data');
+        if (!$analysisData) {
+            return redirect()->route('admin.trend-analysis.index');
+        }
+
+        // Get internal sales data
+        $totalSales = $this->getTotalSalesData();
+        $monthlySales = $this->getMonthlySalesData();
+        $categoryPerformance = $this->getCategoryPerformanceData();
+        $revenueByRegion = $this->getRevenueByRegionData();
+
+        // Prepare data for AI analysis
+        $analysisData = [
+            'sales_data' => $monthlySales,
+            'total_sales' => $totalSales,
+            'category_performance' => $categoryPerformance,
+            'revenue_by_region' => $revenueByRegion,
+            'competitor_data' => $this->getCompetitorData(),
+            'forecast_period' => $analysisData['forecast_period'],
+        ];
+
+        // Get AI analysis
+        $prompt = "You are a senior market analysis expert for a footwear retail business. Analyze the following data, considering internal sales, competitor performance (Nike, Adidas, Puma, Jordan, New Balance), and geographical/cultural factors.
+
+        IMPORTANT: Your response MUST begin with a valid JSON block containing chart data. The JSON must include:
+        - \"forecast\": Revenue predictions for the next {{forecast_period}} months.
+        - \"regional_performance\": Revenue predictions by region.
+        - \"competitor_comparison\": Insights comparing our performance with competitors.
+
+        After the JSON, provide:
+        1. Key findings with supporting data.
+        2. Reasons for revenue changes (increase/decrease).
+        3. Actionable recommendations to maximize revenue or mitigate losses.
+
+        Use the following structure:
+        - \"forecast\": [{\"month\": \"Month Year\", \"revenue\": Number}]
+        - \"regional_performance\": [{\"region\": \"Region Name\", \"revenue\": Number}]
+        - \"competitor_comparison\": [{\"competitor\": \"Name\", \"revenue\": Number, \"market_share\": Number}]
+        ";
+
+        $analysis = $this->diagnosticService->runDiagnostic($analysisData, $prompt);
+
+        // Process the analysis
+        if (isset($analysis['success']) && $analysis['success'] && isset($analysis['analysis'])) {
+            $chartData = $this->extractChartData($analysis['analysis']);
+            if ($chartData) {
+                $analysis['chart_data'] = $chartData;
+            }
+            $analysis['formatted_content'] = $this->formatAnalysisContent($analysis['analysis']);
+        }
+
+        return view('admin.trend-analysis.result', compact(
+            'monthlySales',
+            'categoryPerformance',
+            'revenueByRegion',
+            'analysis'
+        ));
+    }
+
+    private function getCompetitorData()
+    {
+        // Fetch competitor data from the web (mocked for demonstration)
+        $competitorUrls = [
+            'Nike' => 'https://www.nike.com/reports',
+            'Adidas' => 'https://www.adidas.com/reports',
+            'Puma' => 'https://about.puma.com/reports',
+            'Jordan' => 'https://www.nike.com/jordan/reports',
+            'New Balance' => 'https://www.newbalance.com/reports',
+        ];
+
+        $competitorData = [];
+        foreach ($competitorUrls as $competitor => $url) {
+            try {
+                $response = Http::get($url);
+                $data = $response->json();
+
+                // Extract relevant data (mocked structure)
+                $competitorData[] = [
+                    'competitor' => $competitor,
+                    'revenue' => $data['latest_revenue'] ?? 0,
+                    'market_share' => $data['market_share'] ?? 0,
+                    'last_3_years' => $data['last_3_years'] ?? [],
+                ];
+            } catch (\Exception $e) {
+                Log::error("Failed to fetch data for $competitor", ['error' => $e->getMessage()]);
+            }
+        }
+
+        return $competitorData;
     }
 
     /**
@@ -285,6 +330,16 @@ class TrendAnalysisController extends Controller
     }
 
     /**
+     * Get total sales data
+     */
+    private function getTotalSalesData()
+    {
+        return Order::where('status', 'completed')
+            ->where('created_at', '>=', Carbon::now()->subMonths(12))
+            ->sum('total_price');
+    }
+
+    /**
      * Get monthly sales data for the past 12 months
      */
     private function getMonthlySalesData()
@@ -342,7 +397,7 @@ class TrendAnalysisController extends Controller
         return Order::join('addresses', 'orders.id', '=', 'addresses.order_id')
             ->join('cities', 'addresses.city', '=', 'cities.id')
             ->where('orders.status', 'completed')
-            ->where('orders.created_at', '>=', Carbon::now()->subMonths(6))
+            ->where('orders.created_at', '>=', Carbon::now()->subMonths(12))
             ->select(
                 'cities.full_name_en as region',
                 DB::raw('SUM(orders.total_price) as revenue'),
@@ -352,89 +407,5 @@ class TrendAnalysisController extends Controller
             ->orderBy('revenue', 'desc')
             ->get();
     }
-
-    /**
-     * Get market trends data from external sources
-     */
-    private function getMarketTrendsData()
-    {
-        // Example implementation - replace with actual API calls
-        return [
-            'sustainable_fashion' => [
-                'trend_score' => 0.85,
-                'growth_rate' => 0.25,
-                'source' => 'Fashion Industry Report 2023'
-            ],
-            'digital_nomad_style' => [
-                'trend_score' => 0.72,
-                'growth_rate' => 0.18,
-                'source' => 'Social Media Analysis'
-            ],
-            'minimalist_design' => [
-                'trend_score' => 0.68,
-                'growth_rate' => 0.15,
-                'source' => 'Consumer Survey'
-            ]
-        ];
-    }
-
-    /**
-     * Get customer behavior data from analytics
-     */
-    private function getCustomerBehaviorData()
-    {
-        // Example implementation - replace with actual analytics data
-        return [
-            'preferences' => [
-                'eco_friendly' => 0.78,
-                'comfort_first' => 0.82,
-                'price_sensitive' => 0.65
-            ],
-            'purchase_patterns' => [
-                'online_vs_store' => ['online' => 0.65, 'store' => 0.35],
-                'seasonal_peaks' => ['summer' => 0.45, 'winter' => 0.35],
-                'average_basket_size' => 2.5
-            ],
-            'demographics' => [
-                'age_groups' => ['18-24' => 0.25, '25-34' => 0.35, '35-44' => 0.25],
-                'gender_distribution' => ['female' => 0.65, 'male' => 0.35]
-            ]
-        ];
-    }
-
-    /**
-     * Get marketing campaigns data
-     */
-    private function getMarketingCampaignsData()
-    {
-        // Example implementation - replace with actual campaign data
-        return [
-            'active_campaigns' => [
-                'summer_sale' => [
-                    'start_date' => '2023-06-01',
-                    'end_date' => '2023-08-31',
-                    'discount_rate' => 0.20,
-                    'target_categories' => ['summer_dresses', 'swimwear']
-                ],
-                'back_to_school' => [
-                    'start_date' => '2023-07-15',
-                    'end_date' => '2023-09-15',
-                    'discount_rate' => 0.15,
-                    'target_categories' => ['casual_wear', 'accessories']
-                ]
-            ],
-            'campaign_performance' => [
-                'summer_sale' => [
-                    'conversion_rate' => 0.12,
-                    'average_order_value' => 500000,
-                    'customer_acquisition' => 1200
-                ],
-                'back_to_school' => [
-                    'conversion_rate' => 0.08,
-                    'average_order_value' => 500000,
-                    'customer_acquisition' => 800
-                ]
-            ]
-        ];
-    }
+   
 }
