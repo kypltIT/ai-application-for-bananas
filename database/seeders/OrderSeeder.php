@@ -42,17 +42,11 @@ class OrderSeeder extends Seeder
 
                 // Generate random order items and calculate total price
                 $orderItems = $faker->randomElements($productVariants->toArray(), $faker->numberBetween(1, 5));
-                $totalPrice = 0;
-
-                foreach ($orderItems as $item) {
-                    $quantity = $faker->numberBetween(1, 5);
-                    $totalPrice += $item['price'] * $quantity;
-                }
 
                 $orders[] = [
                     'id' => Str::uuid()->toString(),
                     'customer_id' => $faker->randomElement($customerIds),
-                    'total_price' => $totalPrice,
+                    'total_price' => 0, // Set total_price to 0 initially
                     'status' => $faker->randomElement(['ordered', 'processing', 'completed', 'cancelled']),
                     'order_code' => 'BANANAS' . Str::random(10),
                     'order_note' => $faker->optional(0.7)->sentence,

@@ -29,7 +29,7 @@ class Order extends Model
 
     public static function generateOrderCode()
     {
-        return 'BIHA' . Str::random(10);
+        return 'BANANAS' . Str::random(10);
     }
 
     public function address()
