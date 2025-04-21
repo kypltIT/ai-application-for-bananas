@@ -130,7 +130,7 @@
                                                     {{ $order->customer->name }}
                                                 </td>
                                                 <td>
-                                                    ${{ number_format($order->total_price, 0) }}
+                                                    {{ number_format($order->total_price, 0) }}VND
                                                 </td>
                                                 <td>
                                                     <span
