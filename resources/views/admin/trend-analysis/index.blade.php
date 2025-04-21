@@ -73,7 +73,8 @@
                     <div class="col-xl-12 col-lg-12">
                         <div class="card shadow mb-4">
                             <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">Regional Performance</h6>
+                                <!-- Section heading for regional performance -->
+                                <h6 class="m-0 font-weight-bold text-primary">Regional Performance ({{ now()->subMonths(12)->format('F Y') }} - {{ now()->format('F Y') }})</h6>
                             </div>
                             <div class="card-body">
                                 @if (!empty($revenueByRegion) && count($revenueByRegion) > 0)

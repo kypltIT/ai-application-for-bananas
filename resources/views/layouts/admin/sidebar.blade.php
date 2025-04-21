@@ -82,11 +82,11 @@
                         <span>Trend Analysis</span></a>
                 </li>
 
-                <li>
+                {{-- <li>
                     <a class="{{ request()->routeIs('admin.statistics') ? 'active' : '' }}"
                         href="{{ route('admin.statistics') }}"><span class="menu-side"><i class="fa fa-chart-simple"></i></span>
                         <span>Statistics</span></a>
-                </li>
+                </li> --}}
 
                 <li>
                     <a class="{{ request()->routeIs('admin.logout') ? 'active' : '' }}" style="cursor: pointer;"
