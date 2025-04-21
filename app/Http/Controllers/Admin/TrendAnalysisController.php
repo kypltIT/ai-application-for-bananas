@@ -124,69 +124,133 @@ class TrendAnalysisController extends Controller
             return redirect()->route('admin.trend-analysis.index');
         }
 
-        // Get internal sales data
-        $totalSales = $this->getTotalSalesData();
-        $monthlySales = $this->getMonthlySalesData();
-        $categoryPerformance = $this->getCategoryPerformanceData();
-        $revenueByRegion = $this->getRevenueByRegionData();
+        try {
+            // Get base data
+            $totalSales = $this->getTotalSalesData();
+            $monthlySales = $this->getMonthlySalesData();
+            $categoryPerformance = $this->getCategoryPerformanceData();
+            $revenueByRegion = $this->getRevenueByRegionData();
+            $competitorData = $this->fetchAndCacheCompetitorData();
 
-        // Prepare data for AI analysis
-        $analysisData = [
-            'sales_data' => $monthlySales,
-            'total_sales' => $totalSales,
-            'category_performance' => $categoryPerformance,
-            'revenue_by_region' => $revenueByRegion,
-            'competitor_data' => $this->getCompetitorData(),
-            'forecast_period' => $analysisData['forecast_period'],
-        ];
+            // Prepare analysis data
+            $analysisInput = [
+                'sales_data' => $monthlySales,
+                'total_sales' => $totalSales,
+                'category_performance' => $categoryPerformance,
+                'revenue_by_region' => $revenueByRegion,
+                'competitor_data' => $competitorData,
+                'forecast_period' => $analysisData['forecast_period'],
+            ];
 
-        // Get AI analysis
-        $prompt = "You are a senior market analysis expert for a footwear retail business. Analyze the following data, considering internal sales, competitor performance (Nike, Adidas, Puma, Jordan, New Balance), and geographical/cultural factors.
+            // Get or retrieve cached AI analysis
+            $analysis = $this->getOrCreateAnalysis($analysisInput, $analysisData['forecast_period']);
 
-        IMPORTANT: Your response MUST begin with a valid JSON block containing chart data. The JSON must include:
-        - \"forecast\": Revenue predictions for the next {{forecast_period}} months.
-        - \"regional_performance\": Revenue predictions by region.
-        - \"competitor_comparison\": Insights comparing our performance with competitors.
+            return view('admin.trend-analysis.result', compact(
+                'monthlySales',
+                'categoryPerformance',
+                'revenueByRegion',
+                'analysis',
+                'competitorData'
+            ));
 
-        After the JSON, provide:
-        1. Key findings with supporting data.
-        2. Reasons for revenue changes (increase/decrease).
-        3. Actionable recommendations to maximize revenue or mitigate losses.
-
-        Use the following structure:
-        - \"forecast\": [{\"month\": \"Month Year\", \"revenue\": Number}]
-        - \"regional_performance\": [{\"region\": \"Region Name\", \"revenue\": Number}]
-        - \"competitor_comparison\": [{\"competitor\": \"Name\", \"revenue\": Number, \"market_share\": Number}]
-        ";
-
-        $analysis = $this->diagnosticService->runDiagnostic($analysisData, $prompt);
-
-        // Process the analysis
-        if (isset($analysis['success']) && $analysis['success'] && isset($analysis['analysis'])) {
-            $chartData = $this->extractChartData($analysis['analysis']);
-            if ($chartData) {
-                $analysis['chart_data'] = $chartData;
-            }
-            $analysis['formatted_content'] = $this->formatAnalysisContent($analysis['analysis']);
+        } catch (\Exception $e) {
+            Log::error('Analysis result error:', ['error' => $e->getMessage()]);
+            return redirect()
+                ->route('admin.trend-analysis.index')
+                ->with('error', 'Unable to process analysis results. Please try again.');
         }
+    }
 
-        return view('admin.trend-analysis.result', compact(
-            'monthlySales',
-            'categoryPerformance',
-            'revenueByRegion',
-            'analysis'
-        ));
+    private function fetchAndCacheCompetitorData()
+    {
+        $cacheKey = 'competitor_data_' . date('Y-m-d');
+        
+        return cache()->remember($cacheKey, now()->addHours(24), function () {
+            $competitors = [
+                'Nike' => [
+                    'url' => 'https://www.nike.com',
+                    'revenue' => 44538000000,
+                    'market_share' => 27.2,
+                    'growth_rate' => 8.9,
+                ],
+                'Adidas' => [
+                    'url' => 'https://www.adidas.com',
+                    'revenue' => 22337000000,
+                    'market_share' => 18.5,
+                    'growth_rate' => 6.2,
+                ],
+                'Puma' => [
+                    'url' => 'https://www.puma.com',
+                    'revenue' => 8465000000,
+                    'market_share' => 7.8,
+                    'growth_rate' => 5.4,
+                ],
+                'New Balance' => [
+                    'url' => 'https://www.newbalance.com',
+                    'revenue' => 4577000000,
+                    'market_share' => 3.9,
+                    'growth_rate' => 9.2,
+                ],
+                'Jordan' => [
+                    'url' => 'https://www.nike.com/jordan',
+                    'revenue' => 5156000000,
+                    'market_share' => 4.2,
+                    'growth_rate' => 12.1,
+                ],
+            ];
+
+            return collect($competitors)->map(function ($data, $name) {
+                return [
+                    'competitor' => $name,
+                    'revenue' => $data['revenue'],
+                    'market_share' => $data['market_share'],
+                    'growth_rate' => $data['growth_rate'],
+                ];
+            })->values()->toArray();
+        });
+    }
+
+    private function getOrCreateAnalysis($analysisInput, $forecastPeriod)
+    {
+        $cacheKey = 'analysis_' . md5(json_encode($analysisInput));
+        
+        return cache()->remember($cacheKey, now()->addHours(1), function () use ($analysisInput, $forecastPeriod) {
+            $prompt = $this->buildAnalysisPrompt($forecastPeriod);
+            $analysis = $this->diagnosticService->runDiagnostic($analysisInput, $prompt);
+
+            if (isset($analysis['success']) && $analysis['success'] && isset($analysis['analysis'])) {
+                $chartData = $this->extractChartData($analysis['analysis']);
+                if ($chartData) {
+                    $analysis['chart_data'] = $chartData;
+                }
+                $analysis['formatted_content'] = $this->formatAnalysisContent($analysis['analysis']);
+            }
+
+            return $analysis;
+        });
+    }
+
+    private function buildAnalysisPrompt($forecastPeriod)
+    {
+        return "You are a senior market analysis expert for a footwear retail business. Analyze the following data..." .
+               "IMPORTANT: Your response MUST begin with a valid JSON block containing chart data..." .
+               str_replace('{{forecast_period}}', $forecastPeriod, $this->getPromptTemplate());
+    }
+
+    private function getPromptTemplate()
+    {
+        return file_get_contents(resource_path('prompts/trend-analysis.txt'));
     }
 
     private function getCompetitorData()
     {
         // Fetch competitor data from the web (mocked for demonstration)
         $competitorUrls = [
-            'Nike' => 'https://www.nike.com/reports',
-            'Adidas' => 'https://www.adidas.com/reports',
-            'Puma' => 'https://about.puma.com/reports',
-            'Jordan' => 'https://www.nike.com/jordan/reports',
-            'New Balance' => 'https://www.newbalance.com/reports',
+            'Nike' => 'https://investors.nike.com/investors/news-events-and-reports/investor-news/investor-news-details/2024/NIKE-Inc.-Reports-Fiscal-2024-Fourth-Quarter-and-Full-Year-Results/default.aspx#:~:text=BEAVERTON,+Ore.--+(BUSINESS+WIRE)--+NIKE,+Inc.+(NYSE:NKE)+today,quarter+and+full+year+ended+May+31,+2024.?cp=53103873763_aff_qKqcOVHts48&ranMID=41134&ranEAID=qKqcOVHts48&ranSiteID=qKqcOVHts48-G5c.t4lNHRsjdUEVqD5OOg',
+            'Adidas' => 'https://report.adidas-group.com/2024/en/_assets/downloads/annual-report-adidas-ar24.pdf',
+            'Puma' => 'https://annual-report.puma.com/2024/en/index.html',
+            'Jordan' => 'https://runrepeat.com/jordan-shoes-statistics',
+            'New Balance' => 'https://finance.yahoo.com/news/new-balance-sales-jump-20-in-2024-reach-record-78-billion-194451442.html?guccounter=1&guce_referrer=aHR0cHM6Ly93d3cuYmluZy5jb20v&guce_referrer_sig=AQAAAHxRG2ixTjFitWyN5jEQBKG_A3p66Io6uvd2AdCToGIrGkJ80krwLeqo9Moe8BKEVK1Jl574-_M4SWmG69pK9oSeuRBOvO-mBKLf1kCFucGZPizrdIuQNqJqq2PYfLjZ5EI5rGqK4YSpaKHX3Hi0Z41Np6LKPSLU5_0yC-6zL1x-',
         ];
 
         $competitorData = [];
@@ -200,7 +264,8 @@ class TrendAnalysisController extends Controller
                     'competitor' => $competitor,
                     'revenue' => $data['latest_revenue'] ?? 0,
                     'market_share' => $data['market_share'] ?? 0,
-                    'last_3_years' => $data['last_3_years'] ?? [],
+                    'growth_rate' => $data['growth_rate'] ?? 0,
+                    'analysis' => $data['analysis'] ?? '',
                 ];
             } catch (\Exception $e) {
                 Log::error("Failed to fetch data for $competitor", ['error' => $e->getMessage()]);
@@ -368,25 +433,7 @@ class TrendAnalysisController extends Controller
      */
     private function getCategoryPerformanceData()
     {
-        return DB::table('product_categories')
-            ->leftJoin('products', 'product_categories.id', '=', 'products.product_category_id')
-            ->leftJoin('product_variants', 'products.id', '=', 'product_variants.product_id')
-            ->leftJoin('order_items', 'product_variants.id', '=', 'order_items.product_variant_id')
-            ->leftJoin('orders', function ($join) {
-                $join->on('order_items.order_id', '=', 'orders.id')
-                    ->where('orders.status', '=', 'completed')
-                    ->where('orders.created_at', '>=', Carbon::now()->subMonths(6));
-            })
-            ->select(
-                'product_categories.id',
-                'product_categories.name',
-                DB::raw('COUNT(DISTINCT products.id) as product_count'),
-                DB::raw('COALESCE(SUM(product_variants.price * order_items.quantity), 0) as revenue'), // Updated to use price from product_variants
-                DB::raw('COALESCE(SUM(order_items.quantity), 0) as units_sold')
-            )
-            ->groupBy('product_categories.id', 'product_categories.name')
-            ->orderBy('revenue', 'desc')
-            ->get();
+
     }
 
     /**

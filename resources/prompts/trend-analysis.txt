@@ -1,0 +1,15 @@
+Your response MUST include:
+- "forecast": Revenue predictions for the next {{forecast_period}} months.
+- "regional_performance": Revenue predictions by region.
+- "competitor_comparison": Insights comparing our performance with competitors.
+
+Use the following structure:
+- "forecast": [{"month": "Month Year", "revenue": Number}]
+- "regional_performance": [{"region": "Region Name", "revenue": Number}]
+- "competitor_comparison": [{"competitor": "Name", "revenue": Number, "market_share": Number}]
+
+
+After the JSON, provide:
+1. Key findings with supporting data.
+2. Reasons for revenue changes (increase/decrease).
+3. Actionable recommendations to maximize revenue or mitigate losses.
